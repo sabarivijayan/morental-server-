@@ -5,6 +5,7 @@ import AuthRepository from "../repositories/auth-repositories.js";
 import dotenv from "dotenv";
 import minioClient from "../../../config/minio.js";
 import axios from "axios";
+import mime from 'mime-types'
 dotenv.config();
 
 class AuthHelper {
@@ -233,7 +234,7 @@ class AuthHelper {
 
       // Upload to Minio in a single async step
       await minioClient.putObject(
-        process.env.MINIO_BUCKET_NAME_PRIVATE,
+        process.env.MINIO_PRIVATE_BUCKET_NAME,
         uniqueFilename,
         stream,
         { "Content-Type": contentType }
@@ -241,7 +242,7 @@ class AuthHelper {
 
       // Return the presigned URL directly
       return await minioClient.presignedGetObject(
-        process.env.MINIO_BUCKET_NAME_PRIVATE,
+        process.env.MINIO_PRIVATE_BUCKET_NAME,
         uniqueFilename
       );
     } catch (error) {
@@ -253,7 +254,7 @@ class AuthHelper {
   async removeFromMinio(imagePath) {
     try {
       await minioClient.removeObject(
-        process.env.MINIO_BUCKET_NAME_PRIVATE,
+        process.env.MINIO_PRIVATE_BUCKET_NAME,
         imagePath
       );
     } catch (error) {

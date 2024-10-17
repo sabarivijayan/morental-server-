@@ -16,6 +16,9 @@ const BookingCarResolvers = {
           return {
             status: "error",
             message: "Auth token is missing",
+            state: "unauthorized",
+            razorpayOrderId: "",
+            amount: 0,
           };
         }
 
@@ -26,6 +29,10 @@ const BookingCarResolvers = {
           return {
             status: "error",
             message: "User cannot be found. Try and login first",
+            state: "user_not_found",
+            razorpayOrderId: "",
+            amount: 0,
+            currency: "INR",
           };
         }
 
@@ -34,6 +41,19 @@ const BookingCarResolvers = {
           user.id,
           bookingInput
         );
+
+        if (!razorpayOrder || !razorpayOrder.id) {
+          // Handle the case where the order ID is null
+          return {
+            status: "error",
+            message: "Failed to create Razorpay order",
+            state: "order_creation_failed",
+            razorpayOrderId: "", // Return a default value here as well
+            amount: 0,
+            currency: "INR",
+          };
+        }
+
         return {
           status: "success",
           message: "Payment order created successfully",
@@ -42,12 +62,18 @@ const BookingCarResolvers = {
           razorpayOrderId: razorpayOrder.id,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency,
+          state: "created",
+          
         };
       } catch (error) {
         console.error("Error generating payment order: ", error);
         return {
           status: "error",
           message: "Auth token is missing",
+          state: "error",
+          razorpayOrderId: "",
+          amount: 0,
+          currency: "INR",
         };
       }
     },

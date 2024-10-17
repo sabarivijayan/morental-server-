@@ -1,6 +1,9 @@
 import { gql } from "apollo-server-express";
 
 const userAuthTypeDefs = gql`
+
+scalar Upload
+
   type User {
     id: ID!
     firstName: String!

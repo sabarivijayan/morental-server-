@@ -53,7 +53,7 @@ User.init(
       },
     },
     profileImage: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(1000),
       allowNull: true,
     },
     isPhoneNumberVerified: {
