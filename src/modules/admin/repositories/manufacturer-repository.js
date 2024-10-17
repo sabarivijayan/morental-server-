@@ -1,5 +1,7 @@
 import Manufacturer from "../models/manufacturer-model.js"; // Sequelize model
-
+import { deletecarFromTypesense } from "./typesense-repositories.js";
+import Car from "../models/car-model.js";
+import Rentable from "../models/rentable-cars-model.js";
 class ManufacturerRepository {
   static async createManufacturer({ name, country }) {
     try {
@@ -62,7 +64,30 @@ class ManufacturerRepository {
 
   static async deleteManufacturer(id) {
     try {
+
+      const cars = await Car.findAll(
+        {
+          where: {manufacturerId: id}
+        }
+      )
+
+      if(cars.length === 0){
+        console.log(`No vehicle were found for the following manufacturer Id: ${id}`)
+      }
+
+      for(const car of cars){
+        const rentables = await Rentable.findAll({where: {carId: car.id}});
+
+        for(const rentable of rentables){
+          await deletecarFromTypesense(rentable.id);
+          await Rentable.destroy({where: { id: rentable.id}})
+        }
+        await Car.destroy({where: {id: car.id}})
+      }
       const result = await Manufacturer.destroy({ where: { id } });
+      if (result === 0) {
+        throw new Error('Manufacturer not found or already deleted');
+      }
       return result > 0;
     } catch (error) {
       console.error("Error deleting manufacturer:", error);

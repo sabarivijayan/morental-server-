@@ -7,38 +7,45 @@ const userAuthResolvers = {
   Upload: GraphQLUpload,
   Query: {
     fetchUser: async (_, __, { token }) => {
-      if (!token) {
-        throw new Error("Authorization token is not available");
-      }
-      const decodedToken = verifyToken(token.replace("Bearer", ""));
-
-      const user = await User.findByPk(decodedToken.id);
-
-      if (!user) {
+      try {
+        if (!token) {
+          throw new Error("Authorization token is not available");
+        }
+        const strippedToken = token.replace("Bearer ", "").trim();
+        const decodedToken = verifyToken(strippedToken);
+    
+        const user = await User.findByPk(decodedToken.id);
+    
+        if (!user) {
+          return {
+            status: "error",
+            message: "User not found",
+            data: null,
+          };
+        }
+    
         return {
-          status: "error",
-          message: "User not found",
-          data: null,
+          status: "success",
+          message: "User found",
+          data: {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            city: user.city,
+            state: user.state,
+            country: user.country,
+            pincode: user.pincode,
+            profileImage: user.profileImage || null,
+          },
         };
+      } catch (error) {
+        console.error("Error in fetchUser resolver:", error); // Log the actual error
+        throw new Error(error.message); // Rethrow the error to be caught by Apollo Client
       }
-
-      return {
-        status: "success",
-        message: "User found",
-        data: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          city: user.city,
-          state: user.state,
-          country: user.country,
-          pincode: user.pincode,
-          profileImage: user.profileImage || null,
-        },
-      };
-    },
+    }
+    
   },
   Mutation: {
     async registerUser(_, { input }) {
@@ -50,27 +57,16 @@ const userAuthResolvers = {
       return response;
     },
     async sendOTP(_, { phoneNumber }) {
-      try {
-        const response = await authHelpers.sendOTP(phoneNumber);
-        return response;
-      } catch (error) {
-        console.error("Error in sendOTP resolver:", error);
-        return {
-          status: "error",
-          message: error.message || "Failed to send OTP",
-        };
-      }
+      const response = await authHelpers.sendOTP(phoneNumber);
+      return response;
     },
-    async verifyOTP(_, { phoneNumber, otp }) {
+    async verifyOTP(_, { phoneNumber, otp }) {  // Updated parameter
       const response = await authHelpers.verifyOTP(phoneNumber, otp);
       return response;
     },
     async updateProfileImage(_, { userId, profileImage }) {
       try {
-        const response = await authHelpers.updateProfileImage(
-          userId,
-          profileImage
-        );
+        const response = await authHelpers.updateProfileImage(userId, profileImage);
         return response;
       } catch (error) {
         console.error("Error updating profile picture: ", error.message);

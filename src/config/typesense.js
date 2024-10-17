@@ -21,7 +21,7 @@ const createSchema = async () => {
         nested_fields_enabled: true,
         fields:[
             {name: 'id', type: 'string', facet: false},
-            {name: 'pricePerDay', type: 'int32', facet: true},
+            {name: 'pricePerDay', type: 'int32', facet: false},
             {name: 'availableQuantity', type: 'int32', facet: false},
             {name: 'car', type: 'object', facet: false, fields: [
                 {name: 'name', type: 'string', facet: false},
@@ -29,8 +29,8 @@ const createSchema = async () => {
                 {name: 'type', type: 'string', facet: false},
                 {name: 'description', type: 'string', facet: false},
                 {name: 'numberOfSeats', type: 'string', facet: false},
-                {name: 'transmissionType', type: 'string', facet: false},
-                {name: 'fuelType', type: 'string', facet: false},
+                {name: 'transmissionType', type: 'string', facet: true},
+                {name: 'fuelType', type: 'string', facet: true},
                 {name: 'primaryImageUrl', type: 'string', facet: false},
                 {name: 'manufacturer', type: 'object', facet: false, fields:[
                     {name: 'name', type: 'string', facet: false},

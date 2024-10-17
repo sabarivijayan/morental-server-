@@ -21,17 +21,21 @@ const userAuthTypeDefs = gql`
     message: String!
     data: User
   }
-  type LoginResponse{
+
+  type LoginResponse {
     status: String
     message: String
     token: String
     data: User
   }
-   type OtpResponse{
-     status: String!
-     message: String!
-   }
-  input RegistrationInput{
+
+  type OtpResponse {
+    status: String!
+    message: String!
+    otpId: String!
+  }
+
+  input RegistrationInput {
     firstName: String!
     lastName: String!
     phoneNumber: String!
@@ -43,15 +47,17 @@ const userAuthTypeDefs = gql`
     country: String
     pincode: String
   }
-  type Query{
+
+  type Query {
     fetchUser: Response
   }
-  type Mutation{
+
+  type Mutation {
     registerUser(input: RegistrationInput): Response!
     userLogin(email: String!, password: String!): LoginResponse
     sendOTP(phoneNumber: String!): OtpResponse!
-    verifyOTP(phoneNumber:String!, otp: String!): LoginResponse!
-    updateProfileImage(userId: ID!, profileImage: String): Response
+    verifyOTP(phoneNumber: String!, otp: String!): LoginResponse! # Removed otpId
+    updateProfileImage(userId: ID!, profileImage: Upload): Response
   }
 `;
 
