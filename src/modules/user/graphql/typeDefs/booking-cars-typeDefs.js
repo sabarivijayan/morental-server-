@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-express";
+import {gql} from 'apollo-server-express'
 
 const BookingCarTypeDefs = gql`
   scalar Float
@@ -37,7 +37,13 @@ const BookingCarTypeDefs = gql`
     carId: ID!
     userId: ID!
     pickUpDate: String!
+    pickUpTime: String!           # New field for pickup time
     dropOffDate: String!
+    dropOffTime: String!          # New field for drop-off time
+    pickUpLocation: String!       # New field for pickup location
+    dropOffLocation: String!      # New field for drop-off location
+    address: String!
+    phoneNumber: String!
     totalPrice: Float!
     status: String!
     createdAt: String!
@@ -47,32 +53,64 @@ const BookingCarTypeDefs = gql`
   input GenerateBookingInput{
     carId: ID!
     pickUpDate: String!
+    pickUpTime: String!           # New field for pickup time
     dropOffDate: String!
+    dropOffTime: String!          # New field for drop-off time
+    pickUpLocation: String!       # New field for pickup location
+    dropOffLocation: String!      # New field for drop-off location
+    address: String
+    phoneNumber: String!
     totalPrice: Float!
     userInfo: String!
   }
 
   type PaymentResponse{
-    state: String!
+    status: String!
     message: String!
     razorpayOrderId: String!
     amount: Float!
     currency: String!
   }
+
   type BookingResponse{
     status: String!
     message: String!
     data: Booking
-
   }
+
   input PaymentInput{
     razorpayPaymentId: String!
     razorpayOrderId: String!
     razorpaySignature: String!
   }
 
+  type FetchBooking{
+    id: ID!
+    carId: Int!
+    userId: Int!
+    pickUpDate: String!
+    pickUpTime: String!
+    dropOffDate: String!
+    dropOffTime: String!
+    pickUpLocation: String!
+    dropOffLocation: String!
+    address: String!
+    phoneNumber: String!
+    totalPrice: Float!
+    status: String!
+    rentable: Rentable
+  }
+
+  type FetchBookingResponse{
+    status: Boolean!
+    message: String!
+    data: [FetchBooking!]!
+  }
+
+  
   type Query{
     getAvailableCars(pickUpDate: String!, dropOffDate: String!): [Rentable]
+    fetchBookings: FetchBookingResponse!
   }
 
   type Mutation{

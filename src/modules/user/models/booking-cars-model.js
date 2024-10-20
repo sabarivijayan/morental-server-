@@ -19,27 +19,51 @@ BookingCar.init({
         allowNull: false,
     },
     pickUpDate: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false,
     },
-    dropOffDate:{
-        type: DataTypes.DATE,
+    pickUpTime: {
+        type: DataTypes.TIME,   // New field for pickup time
         allowNull: false,
     },
-    status:{
+    dropOffDate: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+    },
+    dropOffTime: {
+        type: DataTypes.TIME,   // New field for drop-off time
+        allowNull: false,
+    },
+    pickUpLocation: {
+        type: DataTypes.STRING,  // New field for pickup location
+        allowNull: false,
+    },
+    dropOffLocation: {
+        type: DataTypes.STRING,  // New field for drop-off location
+        allowNull: false,
+    },
+    status: {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'pending'
     },
-    totalPrice:{
+    totalPrice: {
         type: DataTypes.FLOAT,
         allowNull: false,
     },
-    razorpayOrderId:{
+    razorpayOrderId: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-},{
+    address: {
+        type: DataTypes.STRING,  // Field for user's address
+        allowNull: false,
+    },
+    phoneNumber: {
+        type: DataTypes.STRING,  // Field for user's phone number
+        allowNull: false,
+    }
+}, {
     sequelize,
     modelName: 'BookingCar',
 });

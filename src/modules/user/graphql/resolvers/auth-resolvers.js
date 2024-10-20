@@ -13,9 +13,9 @@ const userAuthResolvers = {
         }
         const strippedToken = token.replace("Bearer ", "").trim();
         const decodedToken = verifyToken(strippedToken);
-    
+
         const user = await User.findByPk(decodedToken.id);
-    
+
         if (!user) {
           return {
             status: "error",
@@ -23,7 +23,7 @@ const userAuthResolvers = {
             data: null,
           };
         }
-    
+
         return {
           status: "success",
           message: "User found",
@@ -44,8 +44,7 @@ const userAuthResolvers = {
         console.error("Error in fetchUser resolver:", error); // Log the actual error
         throw new Error(error.message); // Rethrow the error to be caught by Apollo Client
       }
-    }
-    
+    },
   },
   Mutation: {
     async registerUser(_, { input }) {
@@ -60,13 +59,17 @@ const userAuthResolvers = {
       const response = await authHelpers.sendOTP(phoneNumber);
       return response;
     },
-    async verifyOTP(_, { phoneNumber, otp }) {  // Updated parameter
+    async verifyOTP(_, { phoneNumber, otp }) {
+      // Updated parameter
       const response = await authHelpers.verifyOTP(phoneNumber, otp);
       return response;
     },
     async updateProfileImage(_, { userId, profileImage }) {
       try {
-        const response = await authHelpers.updateProfileImage(userId, profileImage);
+        const response = await authHelpers.updateProfileImage(
+          userId,
+          profileImage
+        );
         return response;
       } catch (error) {
         console.error("Error updating profile picture: ", error.message);
@@ -74,6 +77,30 @@ const userAuthResolvers = {
           status: "error",
           message: "Failed to update profile picture",
           data: null,
+        };
+      }
+    },
+    async updateUserProfile(_, { userId, input }) {
+      try {
+        const response = await authHelpers.updateUserProfile(userId, input);
+        return response;
+      } catch (error) {
+        console.error("Error updating user profile: ", error.message);
+        return {
+          status: "error",
+          message: "Failed to update user profile",
+          data: null,
+        };
+      }
+    },
+    async updatePassword(_, { userId, input }) {
+      try {
+        const response = await authHelpers.updatePassword(userId, input);
+        return response;
+      } catch (error) {
+        return {
+          status: "error",
+          message: "Failed to update password",
         };
       }
     },

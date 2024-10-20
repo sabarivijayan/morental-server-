@@ -7,6 +7,29 @@ const BookingCarResolvers = {
     getAvailableCars: async (_, { pickUpDate, dropOffDate }) => {
       return await BookingCarHelper.getAvailableCars(pickUpDate, dropOffDate);
     },
+    fetchBookings: async(_,__,{token})=>{
+      try {
+        if(!token){
+          console.log("You are not authorized! Auth token is missing!!");
+          return{
+            status: false,
+            message: "You are not authorized! Auth token is missing!!",
+            data: [],
+          }
+        }
+        const decodedToken = verifyToken(token.replace('Bearer ', ''));
+        const userId = decodedToken.id;
+        
+        return await BookingCarHelper.fetchBookingsByUser(userId);
+      } catch (error) {
+        console.error("Error fetching bookings: ", error);
+        return{
+          status: false,
+          message: "Error fetching bookings!!",
+          data: [],
+        };
+      }
+    },
   },
   Mutation: {
     generatePaymentOrder: async (_, { totalPrice, bookingInput }, { token }) => {
@@ -16,9 +39,6 @@ const BookingCarResolvers = {
           return {
             status: "error",
             message: "Auth token is missing",
-            state: "unauthorized",
-            razorpayOrderId: "",
-            amount: 0,
           };
         }
 
@@ -29,10 +49,6 @@ const BookingCarResolvers = {
           return {
             status: "error",
             message: "User cannot be found. Try and login first",
-            state: "user_not_found",
-            razorpayOrderId: "",
-            amount: 0,
-            currency: "INR",
           };
         }
 
@@ -41,19 +57,6 @@ const BookingCarResolvers = {
           user.id,
           bookingInput
         );
-
-        if (!razorpayOrder || !razorpayOrder.id) {
-          // Handle the case where the order ID is null
-          return {
-            status: "error",
-            message: "Failed to create Razorpay order",
-            state: "order_creation_failed",
-            razorpayOrderId: "", // Return a default value here as well
-            amount: 0,
-            currency: "INR",
-          };
-        }
-
         return {
           status: "success",
           message: "Payment order created successfully",
@@ -62,18 +65,12 @@ const BookingCarResolvers = {
           razorpayOrderId: razorpayOrder.id,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency,
-          state: "created",
-          
         };
       } catch (error) {
         console.error("Error generating payment order: ", error);
         return {
           status: "error",
-          message: "Auth token is missing",
-          state: "error",
-          razorpayOrderId: "",
-          amount: 0,
-          currency: "INR",
+          message: "Failed to generate payment order",
         };
       }
     },
@@ -97,16 +94,12 @@ const BookingCarResolvers = {
         bookingInput.userId = userId;
 
         const bookingResponse = await BookingCarHelper.verifyPaymentAndCreateBooking(paymentDetails, bookingInput);
-        return {
-            status: bookingResponse.status,
-            message: bookingResponse.message,
-            data: bookingResponse.data,
-        };
+        return bookingResponse;
       } catch (error) {
         console.error("Error verifying payment and creating booking: ", error);
         return {
-            status: "error",
-            message: 'Payment could not be verified and booking creation failed.',
+          status: "error",
+          message: 'Payment could not be verified and booking creation failed.',
         }
       }
     },

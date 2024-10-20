@@ -9,8 +9,12 @@ class AuthRepository {
     return await User.findOne({ where: { phoneNumber } });
   }
 
-  async updateUser(user) {
-    return await user.save();
+  async updateUser(userId, updatedData) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return await user.update(updatedData);
   }
 
   async updateUserProfileImage(userId, profileImage) {

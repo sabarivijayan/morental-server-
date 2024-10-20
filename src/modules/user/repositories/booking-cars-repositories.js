@@ -66,7 +66,7 @@ class BookingCarRepository {
 
     const bookedCount = doubleBookings.length;
 
-    const availableQuantity = { finalAvailableQuantity } - bookedCount;
+    const availableQuantity = finalAvailableQuantity - bookedCount;
     return availableQuantity > 0;
   }
 
@@ -100,5 +100,36 @@ class BookingCarRepository {
 
     return booking;
   }
+
+  static async fetchBookingsByUserId(userId) {
+    try {
+      return BookingCar.findAll({
+        where: { userId },
+        include: [
+          {
+            model: Rentable,
+            as: "rentable",
+            include: [
+              {
+                model: Car,
+                as: "car",
+                include: [
+                  {
+                    model: Manufacturer,
+                    as: "manufacturer",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    } catch (error) {
+      console.error("Error in Booking Repository: ", error);
+      throw new Error("Query failed");
+    }
+  }
+
 }
+
 export default BookingCarRepository;

@@ -5,70 +5,66 @@ import AuthRepository from "../repositories/auth-repositories.js";
 import dotenv from "dotenv";
 import minioClient from "../../../config/minio.js";
 import axios from "axios";
-import mime from 'mime-types'
+import mime from "mime-types";
 dotenv.config();
 
 class AuthHelper {
-    // Send OTP using AUTOGEN2 with the Morental template
-    async sendOTP(phoneNumber) {
-      try {
-        const apiKey = process.env.TWO_FACTOR_API_KEY;
-        const otpTemplateName = "Morental";  // Morental as the OTP template name
-        const sendOtpUrl = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneNumber}/AUTOGEN2/${otpTemplateName}`;
-        
-        const response = await axios.get(sendOtpUrl);
-        
-        if (response.data.Status !== "Success") {
-          return {
-            status: "error",
-            message: response.data.Details || "Failed to send OTP",
-          };
-        }
-        
-        return {
-          status: "success",
-          message: "OTP sent successfully",
-        };
-        
-      } catch (error) {
-        console.error("Error sending OTP:", error.message);
+  // Send OTP using AUTOGEN2 with the Morental template
+  async sendOTP(phoneNumber) {
+    try {
+      const apiKey = process.env.TWO_FACTOR_API_KEY;
+      const otpTemplateName = "Morental";
+      const sendOtpUrl = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneNumber}/AUTOGEN2/${otpTemplateName}`;
+
+      const response = await axios.get(sendOtpUrl);
+
+      if (response.data.Status !== "Success") {
         return {
           status: "error",
-          message: "Error sending OTP",
+          message: response.data.Details || "Failed to send OTP",
         };
       }
+
+      return {
+        status: "success",
+        message: "OTP sent successfully",
+      };
+    } catch (error) {
+      console.error("Error sending OTP:", error.message);
+      return {
+        status: "error",
+        message: "Error sending OTP",
+      };
     }
-  
+  }
 
-    // Verify OTP using the phone number and the entered OTP
-    async verifyOTP(phoneNumber, otpEntered) {
-      try {
-        const apiKey = process.env.TWO_FACTOR_API_KEY;
-        const verifyOtpUrl = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY3/${phoneNumber}/${otpEntered}`;
-        
-        const response = await axios.get(verifyOtpUrl);
-        
-        if (response.data.Status !== "Success") {
-          return {
-            status: "error",
-            message: response.data.Details || "Invalid OTP",
-          };
-        }
+  // Verify OTP using the phone number and the entered OTP
+  async verifyOTP(phoneNumber, otpEntered) {
+    try {
+      const apiKey = process.env.TWO_FACTOR_API_KEY;
+      const verifyOtpUrl = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY3/${phoneNumber}/${otpEntered}`;
 
-        return {
-          status: "success",
-          message: "OTP verified successfully",
-        };
-        
-      } catch (error) {
-        console.error("Error verifying OTP:", error.message);
+      const response = await axios.get(verifyOtpUrl);
+
+      if (response.data.Status !== "Success") {
         return {
           status: "error",
-          message: "Error verifying OTP",
+          message: response.data.Details || "Invalid OTP",
         };
       }
+
+      return {
+        status: "success",
+        message: "OTP verified successfully",
+      };
+    } catch (error) {
+      console.error("Error verifying OTP:", error.message);
+      return {
+        status: "error",
+        message: "Error verifying OTP",
+      };
     }
-  
+  }
 
   async registerUser(input) {
     const {
@@ -83,7 +79,6 @@ class AuthHelper {
       pincode,
     } = input;
 
-    // Check if the user already exists by phone number or email
     const existingUserByPhone = await AuthRepository.findUserByPhoneNumber(
       phoneNumber
     );
@@ -102,10 +97,8 @@ class AuthHelper {
       };
     }
 
-    // Hash the password before saving
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user object
     const newUser = {
       firstName,
       lastName,
@@ -116,14 +109,12 @@ class AuthHelper {
       state,
       country,
       pincode,
-      isPhoneNumberVerified: true, // Set to true as OTP is verified before registration
+      isPhoneNumberVerified: true,
       phoneNumberVerifiedAt: new Date(),
     };
 
-    // Save the user in the database
     const createdUser = await AuthRepository.createNewUser(newUser);
 
-    // Generate a token for the newly registered user
     const token = generateToken(createdUser);
 
     return {
@@ -177,6 +168,86 @@ class AuthHelper {
     };
   }
 
+  async updateUserProfile(userId, updatedData) {
+    try {
+      const user = await AuthRepository.findById(userId);
+      if (!user) {
+        return {
+          status: "error",
+          message: "User not found",
+        };
+      }
+      const { password, confirmPassword, ...profileData } = updatedData;
+      const updatedUser = await AuthRepository.updateUser(userId, profileData);
+      if (!updatedUser) {
+        return {
+          status: "error",
+          message: "Failed to update user profile",
+        };
+      }
+
+      const { password: _, ...safeUserData } = updatedUser.toJSON();
+      return {
+        status: "success",
+        message: "User profile updated successfully",
+        data: safeUserData,
+      };
+    } catch (error) {
+      console.error("Error updating user profile: ", error.message);
+      return {
+        status: "error",
+        message: "Failed to update user profile",
+      };
+    }
+  }
+
+  async updatePassword(
+    userId,
+    { currentPassword, newPassword, confirmPassword }
+  ) {
+    try {
+      const user = await AuthRepository.findById(userId);
+      if (!user) {
+        return {
+          status: "error",
+          message: "User not found",
+        };
+      }
+      const isCurrentPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password
+      );
+      if (!isCurrentPasswordValid) {
+        return {
+          status: "error",
+          message: "Current password is incorrect",
+        };
+      }
+
+      // Validate new password
+      if (newPassword !== confirmPassword) {
+        return {
+          status: "error",
+          message: "New password and confirm password do not match",
+        };
+      }
+
+      // Hash and update new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await AuthRepository.updateUser(userId, { password: hashedPassword });
+
+      return {
+        status: "success",
+        message: "Password updated successfully",
+      };
+    } catch (error) {
+      console.error("Error updating password:", error.message);
+      return {
+        status: "error",
+        message: "Error updating password",
+      };
+    }
+  }
   async updateProfileImage(userId, profileImage) {
     try {
       const user = await AuthRepository.findById(userId);
@@ -184,13 +255,10 @@ class AuthHelper {
         throw new Error("User not found");
       }
 
-      // If no new image is provided, handle removal of the current image
       if (!profileImage && user.profileImage) {
-        // Remove the existing image from Minio
-        const imagePath = user.profileImage.split("/").slice(-1)[0]; // Get the last part of the URL
+        const imagePath = user.profileImage.split("/").slice(-1)[0];
         await this.removeFromMinio(imagePath);
 
-        // Update user profile image to null in the database
         const updatedUser = await AuthRepository.updateUserProfileImage(
           userId,
           null
@@ -202,12 +270,20 @@ class AuthHelper {
         };
       }
 
-      // If a new image is provided, upload it to Minio
       if (profileImage) {
+        const { filename } = await profileImage;
+        const imagePath = `profile-images/${filename}`;
+
+        const exists = await this.doesMinioObjectExist(imagePath);
+        if (exists) {
+          await this.removeFromMinio(imagePath);
+        }
+
         const imageUrl = await this.uploadToMinio(
           profileImage,
           "profile-images"
         );
+
         const updatedUser = await AuthRepository.updateUserProfileImage(
           userId,
           imageUrl
@@ -225,14 +301,29 @@ class AuthHelper {
     }
   }
 
+  async doesMinioObjectExist(imagePath) {
+    try {
+      await minioClient.statObject(
+        process.env.MINIO_PRIVATE_BUCKET_NAME,
+        imagePath
+      );
+      return true;
+    } catch (error) {
+      if (error.code === "NoSuchKey" || error.message === "Not Found") {
+        return false;
+      }
+      console.error("Error checking object existence in Minio:", error.message);
+      throw new Error("Failed to check object existence in Minio");
+    }
+  }
+
   async uploadToMinio(file, folder) {
     try {
       const { createReadStream, filename } = await file;
       const stream = createReadStream();
-      const uniqueFilename = `${folder}/${filename}`; // Maintain unique path for storage
+      const uniqueFilename = `${folder}/${filename}`;
       const contentType = mime.lookup(filename) || "application/octet-stream";
 
-      // Upload to Minio in a single async step
       await minioClient.putObject(
         process.env.MINIO_PRIVATE_BUCKET_NAME,
         uniqueFilename,
@@ -240,7 +331,6 @@ class AuthHelper {
         { "Content-Type": contentType }
       );
 
-      // Return the presigned URL directly
       return await minioClient.presignedGetObject(
         process.env.MINIO_PRIVATE_BUCKET_NAME,
         uniqueFilename
@@ -258,7 +348,8 @@ class AuthHelper {
         imagePath
       );
     } catch (error) {
-      console.error("Error removing the image from Minio: ", error.message);
+      console.error("Error removing the image from Minio:", error.message);
+      throw new Error("Failed to remove image from Minio");
     }
   }
 }
