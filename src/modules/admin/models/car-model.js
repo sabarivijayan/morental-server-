@@ -59,14 +59,20 @@ Car.init({
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  deletedAt:{
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
 },{
     sequelize,
     modelName: "Car",
+    paranoid: true,
 });
 
 Car.belongsTo(Manufacturer, {
     foreignKey: "manufacturerId",
     as: 'manufacturer',
+    onDelete: 'SET NULL'
 });
 
 export default Car;

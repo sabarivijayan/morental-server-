@@ -1,5 +1,5 @@
 import Manufacturer from "../models/manufacturer-model.js"; // Sequelize model
-import { deletecarFromTypesense } from "./typesense-repositories.js";
+import { deletecarFromTypesense } from "../../../config/typesense.js";
 import Car from "../models/car-model.js";
 import Rentable from "../models/rentable-cars-model.js";
 class ManufacturerRepository {

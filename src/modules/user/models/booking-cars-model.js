@@ -62,7 +62,11 @@ BookingCar.init({
     phoneNumber: {
         type: DataTypes.STRING,  // Field for user's phone number
         allowNull: false,
-    }
+    },
+    deliveryDate:{
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+    },
 }, {
     sequelize,
     modelName: 'BookingCar',

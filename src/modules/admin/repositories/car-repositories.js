@@ -1,5 +1,5 @@
 import Car from "../models/car-model.js";
-import { deletecarFromTypesense } from "./typesense-repositories.js";
+import { deletecarFromTypesense } from "../../../config/typesense.js";
 import Rentable from "../models/rentable-cars-model.js";
 class CarRepository {
   static async createCar(carData) {

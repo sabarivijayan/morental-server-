@@ -19,7 +19,7 @@ const CarTypeDefs = gql`
     year: String!
   }
 
-  input CarInput{
+  input AdminCarInput{
     name: String!
     type: String!
     numberOfSeats: String!
@@ -44,6 +44,12 @@ const CarTypeDefs = gql`
     year: String!
   }
 
+  type AddCarByExcelResponse{
+    success: Boolean!
+    message: String
+    addedCarsCount: Int!
+  }
+
   type Query {
     getCars: [Car!]!
     getCarById(id: String!): Car
@@ -51,7 +57,7 @@ const CarTypeDefs = gql`
 
   type Mutation {
     addCar(
-      input: CarInput!,
+      input: AdminCarInput!,
       primaryImage: Upload!,
       secondaryImages: [Upload!]!
     ): Car!
@@ -59,6 +65,8 @@ const CarTypeDefs = gql`
     updateCar( id: String!, input: EditCarInput!): Car!
 
     deleteCar(id: String!): Car
+
+    addCarByExcel(excelFile: Upload!): AddCarByExcelResponse!
   }
 `;
 

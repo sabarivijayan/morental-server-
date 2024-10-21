@@ -1,5 +1,5 @@
 import RentableRepository from "../repositories/rentable-cars-repositories.js";
-import { deletecarFromTypesense } from "../repositories/typesense-repositories.js";
+import { deletecarFromTypesense } from "../../../config/typesense.js";
 import CarRepository from "../repositories/car-repositories.js";
 class RentableCarsHelper {
   static async getRentableCarById(id) {

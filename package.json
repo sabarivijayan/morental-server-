@@ -36,11 +36,13 @@
     "sequelize": "^6.37.3",
     "server": "file:",
     "twilio": "^5.3.3",
-    "typesense": "^1.8.2"
+    "typesense": "^1.8.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.7"
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/mime-types": "^2.1.4"
   }
 }

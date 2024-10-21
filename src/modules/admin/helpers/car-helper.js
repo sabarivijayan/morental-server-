@@ -220,6 +220,8 @@ class CarHelper {
       throw new Error(error.message || "Failed to update car");
     }
   }
+
+  
 }
 
 export default CarHelper;

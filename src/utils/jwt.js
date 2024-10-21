@@ -1,4 +1,6 @@
 import jwt from "jsonwebtoken";
+import dotenv from 'dotenv'
+dotenv.config();
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key"; // Replace with your secret key
 
@@ -9,7 +11,12 @@ export const generateToken = (user) => {
 };
 
 export const verifyToken = (token) => {
-  return jwt.verify(token, SECRET_KEY);
+  try {
+    return jwt.verify(token, SECRET_KEY);
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    throw error;
+  }
 };
 
 // Function to extract user ID from the token

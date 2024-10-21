@@ -18,7 +18,7 @@ const BookingCarTypeDefs = gql`
     transmissionType: String!
     description: String!
     quantity: String!
-    manufacturerId: String!
+    manufacturer: Manufacturer!
     primaryImageUrl: String
     secondaryImagesUrls: [String]
     year: String!
@@ -72,7 +72,7 @@ const BookingCarTypeDefs = gql`
     currency: String!
   }
 
-  type BookingResponse{
+  type GenerateBookingResponse{
     status: String!
     message: String!
     data: Booking
@@ -97,7 +97,7 @@ const BookingCarTypeDefs = gql`
     address: String!
     phoneNumber: String!
     totalPrice: Float!
-    status: String!
+    status: String
     rentable: Rentable
   }
 
@@ -115,7 +115,7 @@ const BookingCarTypeDefs = gql`
 
   type Mutation{
     generatePaymentOrder(totalPrice: Float!, bookingInput: GenerateBookingInput!) : PaymentResponse!
-    verifyPaymentAndCreateBooking(paymentDetails: PaymentInput!, bookingInput: GenerateBookingInput!):BookingResponse!
+    verifyPaymentAndCreateBooking(paymentDetails: PaymentInput!, bookingInput: GenerateBookingInput!):GenerateBookingResponse!
   }
 `;
 

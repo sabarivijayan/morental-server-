@@ -9,6 +9,7 @@ const RentableTypeDefs = gql`
     name: String!
     country: String!
   }
+
   type Car {
     id: ID!
     manufacturer: Manufacturer
@@ -19,22 +20,32 @@ const RentableTypeDefs = gql`
     transmissionType: String!
     description: String!
     quantity: String!
-    manufacturerId: String!
     primaryImageUrl: String
     secondaryImagesUrls: [String]
     year: String!
   }
 
-  input CarInput{
+  input ManufacturerInput {
+    name: String!
+  }
+
+  input CarDetailsInput {
     name: String!
     type: String!
+    description: String!
     numberOfSeats: String!
-    fuelType: String!
     transmissionType: String!
-    description: String
-    quantity: String!
-    manufacturerId: String!
+    fuelType: String!
+    primaryImageUrl: String
+    manufacturer: ManufacturerInput!
     year: String!
+  }
+
+  input CarInput {
+    id: String!
+    pricePerDay: Int!
+    availableQuantity: Int!
+    car: CarDetailsInput!
   }
 
   type RentableCar {
@@ -50,7 +61,7 @@ const RentableTypeDefs = gql`
   }
 
   type Mutation {
-    addCarToTypesense(car: CarInput!): String
+    addcarToTypesense(car: CarInput!): String
   }
 `;
 
