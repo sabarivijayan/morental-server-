@@ -19,7 +19,7 @@ const RentableCarResolver = {
               name: car.name,
               type: car.type,
               pricePerDay: car.pricePerDay,
-              transmissionType: car.transmission,
+              transmissionType: car.transmissionType,
               fuelType: car.fuelType,
               year: car.year,
               availableQuantity: car.availableQuantity,

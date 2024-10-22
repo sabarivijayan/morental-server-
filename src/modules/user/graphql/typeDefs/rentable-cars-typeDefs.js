@@ -9,45 +9,31 @@ const RentableTypeDefs = gql`
     name: String!
     country: String!
   }
-
   type Car {
     id: ID!
-    manufacturer: Manufacturer
     name: String!
-    type: String!
-    numberOfSeats: String!
-    fuelType: String!
-    transmissionType: String!
     description: String!
     quantity: String!
     primaryImageUrl: String
     secondaryImagesUrls: [String]
     year: String!
+    manufacturer: Manufacturer
   }
 
-  input ManufacturerInput {
+  input CarInput{
+    id:String!
     name: String!
-  }
-
-  input CarDetailsInput {
-    name: String!
-    type: String!
-    description: String!
-    numberOfSeats: String!
-    transmissionType: String!
-    fuelType: String!
-    primaryImageUrl: String
-    manufacturer: ManufacturerInput!
-    year: String!
-  }
-
-  input CarInput {
-    id: String!
     pricePerDay: Int!
-    availableQuantity: Int!
-    car: CarDetailsInput!
+    transmissionType: String!
+    fuelType: String
+    manufacturer: String!
+    numberOfSeats: String
+    availableQuantity: Int
+    year: String!
+    type: String
+    description: String!
+    primaryImageUrl: String
   }
-
   type RentableCar {
     id: ID!
     carId: ID!

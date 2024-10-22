@@ -148,6 +148,8 @@ class BookingCarHelper {
     try {
       const bookings = await BookingCarRepository.fetchBookingsByUserId(userId);
 
+      console.log(bookings)
+
       if (!bookings || bookings.legth === 0) {
         return {
           status: true,

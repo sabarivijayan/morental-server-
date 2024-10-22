@@ -8,6 +8,7 @@ const BookingCarResolvers = {
       return await BookingCarHelper.getAvailableCars(pickUpDate, dropOffDate);
     },
     fetchBookings: async(_,__,{token})=>{
+      
       try {
         if(!token){
           console.log("You are not authorized! Auth token is missing!!");

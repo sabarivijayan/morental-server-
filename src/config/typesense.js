@@ -30,7 +30,7 @@ const createSchema = async () => {
         fields: [
           { name: "name", type: "string", facet: false },
           { name: "year", type: "string", facet: false },
-          { name: "type", type: "string", facet: false },
+          { name: "type", type: "string", facet: true },
           { name: "description", type: "string", facet: false },
           { name: "numberOfSeats", type: "string", facet: false },
           { name: "transmissionType", type: "string", facet: true },
@@ -56,7 +56,6 @@ const createSchema = async () => {
 
 // createSchema()
 const addcarToTypesense = async (car) => {
-
     const document = {
         id: car.id,
         pricePerDay: car.pricePerDay,
