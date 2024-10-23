@@ -6,7 +6,7 @@ import { Model, DataTypes } from "sequelize";
 class BookingCar extends Model {}
 
 BookingCar.init({
-    rentableId: {
+    carId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
