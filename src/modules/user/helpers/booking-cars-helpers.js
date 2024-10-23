@@ -38,7 +38,7 @@ class BookingCarHelper {
     try {
       // Step 1: Check vehicle availability
       const isAvailable = await BookingCarRepository.checkCarAvailability(
-        bookingInput.carId,
+        bookingInput.rentableId,
         new Date(bookingInput.pickUpDate),
         new Date(bookingInput.dropOffDate)
       );
@@ -58,12 +58,11 @@ class BookingCarHelper {
       };
 
       const razorpayOrder = await razorpay.orders.create(options);
-      console.log("Razorpay Order Created:", razorpayOrder);
 
       // Step 3: Add booking input to database with status "pending"
       const bookingData = {
         userId: userId,
-        carId: bookingInput.carId,
+        rentableId: bookingInput.rentableId,
         pickUpDate: new Date(bookingInput.pickUpDate),
         pickUpTime: bookingInput.pickUpTime,
         dropOffDate: new Date(bookingInput.dropOffDate),
@@ -97,6 +96,7 @@ class BookingCarHelper {
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature } =
       paymentDetails;
 
+      console.log("id",bookingInput)
     try {
       // Step 1: Generate signature for verification
       const generatedSignature = crypto
@@ -112,9 +112,10 @@ class BookingCarHelper {
         };
       }
 
+      
       // Step 3: Check car availability again before finalizing the booking
       const isAvailable = await BookingCarRepository.checkCarAvailability(
-        bookingInput.carId,
+        bookingInput.rentableId,
         new Date(bookingInput.pickUpDate),
         new Date(bookingInput.dropOffDate)
       );
@@ -131,6 +132,7 @@ class BookingCarHelper {
         razorpayOrderId,
         "booked"
       );
+
 
       // Step 5: Return a success message with booking details
       return {
@@ -155,6 +157,8 @@ class BookingCarHelper {
           data: [],
         };
       }
+
+      console.log(bookings);
       return {
         status: true,
         message: "Bookings fetched successfully.",

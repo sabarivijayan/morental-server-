@@ -1,6 +1,7 @@
 import RentableCarHelper from "../../helpers/rentable-cars-helpers.js";
 import { addcarToTypesense } from "../../../../config/typesense.js";
 
+
 const RentableCarResolver = {
     Query: {
         getRentableCarsWithId: async(_, {id})=>{
@@ -8,10 +9,12 @@ const RentableCarResolver = {
         }
     },
 
+
     Mutation: {
         addcarToTypesense: async (_, { car }) => {
           console.log(car);
           try {
+
 
             console.log(car)
             const typesenseCar = {
@@ -19,7 +22,7 @@ const RentableCarResolver = {
               name: car.name,
               type: car.type,
               pricePerDay: car.pricePerDay,
-              transmissionType: car.transmission,
+              transmissionType: car.transmissionType,
               fuelType: car.fuelType,
               year: car.year,
               availableQuantity: car.availableQuantity,
@@ -28,7 +31,7 @@ const RentableCarResolver = {
               primaryImageUrl: car.primaryImageUrl,
               description: car.description
             };
-    
+   
             await addcarToTypesense(typesenseCar);
             return 'Car added to Typesense successfully';
           } catch (error) {
@@ -38,5 +41,6 @@ const RentableCarResolver = {
         },
       },
 }
+
 
 export default RentableCarResolver;
