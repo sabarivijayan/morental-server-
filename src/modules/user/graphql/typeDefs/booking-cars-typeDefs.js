@@ -51,7 +51,8 @@ const BookingCarTypeDefs = gql`
   }
 
   input GenerateBookingInput{
-    carId: ID!
+    rentableId: Int
+    carId: ID
     pickUpDate: String!
     pickUpTime: String!           # New field for pickup time
     dropOffDate: String!

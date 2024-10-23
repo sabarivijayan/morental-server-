@@ -63,7 +63,7 @@ class BookingCarHelper {
       // Step 3: Add booking input to database with status "pending"
       const bookingData = {
         userId: userId,
-        carId: bookingInput.carId,
+        carId: bookingInput.rentableId,
         pickUpDate: new Date(bookingInput.pickUpDate),
         pickUpTime: bookingInput.pickUpTime,
         dropOffDate: new Date(bookingInput.dropOffDate),

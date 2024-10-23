@@ -9,7 +9,7 @@ BookingCar.init({
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Cars',
+            model: Rentable,
             key: 'id'
         },
         onDelete: 'CASCADE',
