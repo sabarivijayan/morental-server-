@@ -1,4 +1,5 @@
 import sequelize from "../../../config/database.js";
+import Car from "../../admin/models/car-model.js";
 import Rentable from "../../admin/models/rentable-cars-model.js";
 import { Model, DataTypes } from "sequelize";
 
@@ -9,7 +10,7 @@ BookingCar.init({
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Cars',
+            model: Car,
             key: 'id'
         },
         onDelete: 'CASCADE',

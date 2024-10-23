@@ -104,7 +104,7 @@ const BookingCarTypeDefs = gql`
   type FetchBookingResponse{
     status: Boolean!
     message: String!
-    data: [FetchBooking!]!
+    data: [FetchBooking]
   }
 
   

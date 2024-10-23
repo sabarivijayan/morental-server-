@@ -150,7 +150,7 @@ class BookingCarHelper {
 
       console.log(bookings)
 
-      if (!bookings || bookings.legth === 0) {
+      if (!bookings || bookings.length === 0) {
         return {
           status: true,
           message: "No bookings found for the user.",
