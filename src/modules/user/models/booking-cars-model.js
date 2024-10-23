@@ -1,11 +1,12 @@
 import sequelize from "../../../config/database.js";
+import Car from "../../admin/models/car-model.js";
 import Rentable from "../../admin/models/rentable-cars-model.js";
 import { Model, DataTypes } from "sequelize";
 
 class BookingCar extends Model {}
 
 BookingCar.init({
-    carId: {
+    rentableId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
