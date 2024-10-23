@@ -22,10 +22,7 @@ const RentableTypeDefs = gql`
     manufacturer: Manufacturer
   }
 
-<<<<<<< HEAD
-=======
 
->>>>>>> temp-branch
   input CarInput{
     id:String!
     name: String!
@@ -58,9 +55,5 @@ const RentableTypeDefs = gql`
   }
 `;
 
-<<<<<<< HEAD
-export default RentableTypeDefs;
-=======
 
 export default RentableTypeDefs;
->>>>>>> temp-branch
