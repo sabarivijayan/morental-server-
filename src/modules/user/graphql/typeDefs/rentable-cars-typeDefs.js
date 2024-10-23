@@ -1,8 +1,10 @@
 import { gql } from "apollo-server-express";
 
+
 const RentableTypeDefs = gql`
   scalar Float
   scalar Int
+
 
   type Manufacturer {
     id: ID!
@@ -20,6 +22,10 @@ const RentableTypeDefs = gql`
     manufacturer: Manufacturer
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> temp-branch
   input CarInput{
     id:String!
     name: String!
@@ -41,14 +47,20 @@ const RentableTypeDefs = gql`
     availableQuantity: Int!
     car: Car
   }
-  
+ 
   type Query {
     getRentableCarsWithId(id: ID!): RentableCar
   }
+
 
   type Mutation {
     addcarToTypesense(car: CarInput!): String
   }
 `;
 
+<<<<<<< HEAD
 export default RentableTypeDefs;
+=======
+
+export default RentableTypeDefs;
+>>>>>>> temp-branch

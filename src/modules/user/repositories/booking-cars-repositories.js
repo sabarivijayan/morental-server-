@@ -28,20 +28,28 @@ class BookingCarRepository {
     return response;
   }
 
-  static async checkCarAvailability(carId, pickUpDate, dropOffDate) {
-    const rentableCar = await Rentable.findOne({
-      where: { carId },
-    });
+  static async checkCarAvailability(id, pickUpDate, dropOffDate) {
 
-    if (!rentableCar) {
+    const rentableCar = await Rentable.findByPk(id);
+
+
+    if (!(rentableCar)) {
+      
       throw new Error("Car not found.");
     }
 
     const finalAvailableQuantity = rentableCar.availableQuantity;
 
+    const emptyBookings = await BookingCar.findAll()
+
+    if(emptyBookings.length === 0){
+      return true;
+    }
+
+
     const doubleBookings = await BookingCar.findAll({
       where: {
-        carId,
+        carId:id,
         status: "booked",
         [Op.or]: [
           {
@@ -108,15 +116,15 @@ class BookingCarRepository {
         include: [
           {
             model: Rentable,
-            as: "rentable",
+            as: "rentable", // Make sure this matches the alias in the BookingCar model
             include: [
               {
                 model: Car,
-                as: "car",
+                as: "car", // Ensure this alias matches the Rentable-Car association
                 include: [
                   {
                     model: Manufacturer,
-                    as: "manufacturer",
+                    as: "manufacturer", // Ensure this alias matches the Car-Manufacturer association
                   },
                 ],
               },

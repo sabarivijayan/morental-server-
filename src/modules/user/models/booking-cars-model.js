@@ -6,11 +6,11 @@ import { Model, DataTypes } from "sequelize";
 class BookingCar extends Model {}
 
 BookingCar.init({
-    carId: {
+    rentableId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Car,
+            model: Rentable,
             key: 'id'
         },
         onDelete: 'CASCADE',
