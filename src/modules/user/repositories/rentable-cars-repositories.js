@@ -30,6 +30,35 @@ class RentableCarsRepository{
             throw new Error ('Error trying to fetch rentable cars: ' +error.message);
         }
     }
+    static async FindAllRentablesByIds(ids) {
+        try {
+            const rentableCars = await Rentable.findAll({
+                where: {
+                    id: ids, // Fetch cars where the ID is in the provided array
+                },
+                include: [
+                    {
+                        model: Car,
+                        as: 'car',
+                        include: [
+                            {
+                                model: Manufacturer,
+                                as: 'manufacturer',
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            if (rentableCars.length === 0) {
+                throw new Error('No rentable cars found for the provided IDs');
+            }
+
+            return rentableCars;
+        } catch (error) {
+            throw new Error('Error trying to fetch rentable cars: ' + error.message);
+        }
+    }
 }
 
 export default RentableCarsRepository;

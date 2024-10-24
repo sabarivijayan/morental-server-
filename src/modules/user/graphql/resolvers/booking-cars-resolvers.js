@@ -4,8 +4,37 @@ import User from "../../models/auth-model.js";
 
 const BookingCarResolvers = {
   Query: {
-    getAvailableCars: async (_, { pickUpDate, dropOffDate }) => {
-      return await BookingCarHelper.getAvailableCars(pickUpDate, dropOffDate);
+    getAvailableCars: async (
+      _,
+      {
+        pickupDate,
+        dropoffDate,
+        query,
+        transmissionType,
+        fuelType,
+        numberOfSeats,
+        priceSort,
+      }
+    ) => {
+      // Ensure the arrays are not empty
+      const transmissionArray =
+        Array.isArray(transmissionType) && transmissionType.length > 0
+          ? transmissionType
+          : undefined;
+      const fuelTypeArray =
+        Array.isArray(fuelType) && fuelType.length > 0 ? fuelType : undefined;
+      const seatsArray =
+        Array.isArray(numberOfSeats) && numberOfSeats.length > 0 ? numberOfSeats : undefined;
+  
+      return await BookingCarHelper.getAvailableCars(
+        pickupDate,
+        dropoffDate,
+        query,
+        transmissionArray,
+        fuelTypeArray,
+        seatsArray,
+        priceSort
+      );
     },
     fetchBookings: async(_,__,{token})=>{
       

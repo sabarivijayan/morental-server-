@@ -2,6 +2,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import BookingCarRepository from "../repositories/booking-cars-repositories.js";
+import RentableCarHelper from "./rentable-cars-helpers.js";
 
 dotenv.config();
 
@@ -11,28 +12,6 @@ const razorpay = new Razorpay({
 });
 
 class BookingCarHelper {
-
-  static async getAvailableCars(pickUpDate, dropOffDate) {
-    try {
-      const rentableCars = await BookingCarRepository.getRentableCars();
-      const availableCars = [];
-
-      for (const rentableCar of rentableCars) {
-        const isAvailable = await BookingCarRepository.checkCarAvailability(
-          rentableCar.carId,
-          pickUpDate,
-          dropOffDate
-        );
-        if (isAvailable) {
-          availableCars.push(rentableCar);
-        }
-      }
-      return availableCars;
-    } catch (error) {
-      console.error("Error fetching available cars:", error);
-      throw new Error("Unable to fetch available cars");
-    }
-  }
 
   static async createPaymentOrder(totalPrice, userId, bookingInput) {
     try {
@@ -176,6 +155,78 @@ class BookingCarHelper {
     }
   }
 
+  static async getAvailableCars(
+    pickupDate,
+    dropoffDate,
+    query,
+    transmissionType,
+    fuelType,
+    numberOfSeats,
+    priceSort
+  ) {
+    try {
+      if (query || transmissionType || fuelType || numberOfSeats || priceSort) {
+        const rentableCars = await RentableCarHelper.searchRentableCars({
+          query,
+          transmissionType, 
+          fuelType,    
+          numberOfSeats,     
+          priceSort,
+        });
+    
+        const availableCars = [];
+    
+        // Step 4: Check availability for each rentable vehicle
+        for (const rentable of rentableCars) {
+          const isAvailable = await BookingCarRepository.checkCarAvailability(
+            rentable.carId,
+            pickupDate,
+            dropoffDate
+          );
+    
+          console.log(`Car ID ${rentable.carId} availability:`, isAvailable);
+    
+          if (isAvailable) {
+            availableCars.push(rentable);
+          }
+        }
+    
+        console.log("Available Cars after filtering:", availableCars);
+        return {
+          status: "success",
+          message: "success",
+          data: availableCars,
+        };
+      } else {
+        // Business logic for fetching available vehicles
+        const rentableCars = await BookingCarRepository.getRentableCars();
+
+        const availableCars = [];
+
+        for (const rentable of rentableCars) {
+          const isAvailable = await BookingCarRepository.checkCarAvailability(
+            rentable.carId,
+            pickupDate,
+            dropoffDate
+          );
+          console.log(isAvailable);
+          if (isAvailable) {
+            availableCars.push(rentable);
+          }
+        }
+        console.log("available", availableCars);
+        return {
+          status: "success",
+          message: "success",
+          data: availableCars,
+        };
+      }
+    } catch (error) {
+      throw new Error(
+        "Failed to fetch available cars. Please try again later."
+      );
+    }
+  }
 }
 
 export default BookingCarHelper;

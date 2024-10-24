@@ -108,10 +108,33 @@ const BookingCarTypeDefs = gql`
     data: [FetchBooking]
   }
 
-  
+  input FilterInput {
+    numberOfSeats: [String]
+    transmissionTypes: [String]
+    fuelTypes: [String]
+    maxPrice: Float
+    sortBy: String
+    sortOrder: String
+  }
+
+  type GetAvailableCarsResponse {
+    status: String!
+    message: String!
+    data: [Rentable]
+  }
+
   type Query{
-    getAvailableCars(pickUpDate: String!, dropOffDate: String!): [Rentable]
-    fetchBookings: FetchBookingResponse!
+    getAvailableCars(
+      pickUpDate: String!
+      dropOffDate: String!
+      query: String
+      transmissionType: [String]
+      fuelType: [String]
+      numberOfSeats: [Int]
+      priceSort: String
+    ): GetAvailableCarsResponse
+      
+      fetchBookings: FetchBookingResponse!
   }
 
   type Mutation{

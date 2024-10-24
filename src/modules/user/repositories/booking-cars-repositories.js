@@ -5,17 +5,59 @@ import BookingCar from "../models/booking-cars-model.js";
 import { Op } from "sequelize";
 
 class BookingCarRepository {
-  static async getRentableCars() {
+  static async getRentableCars(filters = {}) {
+    const whereClause = {
+      availableQuantity: {
+        [Op.gt]: 0,
+      }
+    };
+
+    const carWhereClause = {};
+    
+    // Filter by number of seats
+    if (filters.numberOfSeats && filters.numberOfSeats.length > 0) {
+      carWhereClause.numberOfSeats = {
+        [Op.in]: filters.numberOfSeats
+      };
+    }
+
+    // Filter by transmission type
+    if (filters.transmissionTypes && filters.transmissionTypes.length > 0) {
+      carWhereClause.transmissionType = {
+        [Op.in]: filters.transmissionTypes
+      };
+    }
+
+    // Filter by fuel type
+    if (filters.fuelTypes && filters.fuelTypes.length > 0) {
+      carWhereClause.fuelType = {
+        [Op.in]: filters.fuelTypes
+      };
+    }
+
+    // Filter by price
+    if (filters.maxPrice) {
+      whereClause.pricePerDay = {
+        [Op.lte]: filters.maxPrice
+      };
+    }
+
+    // Sorting
+    let order = [];
+    if (filters.sortBy) {
+      const sortOrder = filters.sortOrder === 'DESC' ? 'DESC' : 'ASC';
+      if (filters.sortBy === 'price') {
+        order.push(['pricePerDay', sortOrder]);
+      }
+    }
+
     const response = await Rentable.findAll({
-      where: {
-        availableQuantity: {
-          [Op.gt]: 0,
-        },
-      },
+      where: whereClause,
       include: [
         {
           model: Car,
           as: "car",
+          where: carWhereClause,
           include: [
             {
               model: Manufacturer,
@@ -24,32 +66,28 @@ class BookingCarRepository {
           ],
         },
       ],
+      order
     });
     return response;
   }
 
   static async checkCarAvailability(id, pickUpDate, dropOffDate) {
-
     const rentableCar = await Rentable.findByPk(id);
-
-
-    if (!(rentableCar)) {
-      
+    
+    if (!rentableCar) {
       throw new Error("Car not found.");
     }
 
     const finalAvailableQuantity = rentableCar.availableQuantity;
+    const emptyBookings = await BookingCar.findAll();
 
-    const emptyBookings = await BookingCar.findAll()
-
-    if(emptyBookings.length === 0){
+    if (emptyBookings.length === 0) {
       return true;
     }
 
-
     const doubleBookings = await BookingCar.findAll({
       where: {
-        carId:id,
+        carId: id,
         status: "booked",
         [Op.or]: [
           {
@@ -73,7 +111,6 @@ class BookingCarRepository {
     });
 
     const bookedCount = doubleBookings.length;
-
     const availableQuantity = finalAvailableQuantity - bookedCount;
     return availableQuantity > 0;
   }
@@ -116,15 +153,15 @@ class BookingCarRepository {
         include: [
           {
             model: Rentable,
-            as: "rentable", // Make sure this matches the alias in the BookingCar model
+            as: "rentable",
             include: [
               {
                 model: Car,
-                as: "car", // Ensure this alias matches the Rentable-Car association
+                as: "car",
                 include: [
                   {
                     model: Manufacturer,
-                    as: "manufacturer", // Ensure this alias matches the Car-Manufacturer association
+                    as: "manufacturer",
                   },
                 ],
               },
