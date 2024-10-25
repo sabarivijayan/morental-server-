@@ -132,6 +132,7 @@ const BookingCarTypeDefs = gql`
       fuelType: [String]
       numberOfSeats: [Int]
       priceSort: String
+      maxPrice: Float
     ): GetAvailableCarsResponse
       
       fetchBookings: FetchBookingResponse!

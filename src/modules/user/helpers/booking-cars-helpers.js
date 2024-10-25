@@ -162,16 +162,18 @@ class BookingCarHelper {
     transmissionType,
     fuelType,
     numberOfSeats,
-    priceSort
+    priceSort,
+    maxPrice
   ) {
     try {
-      if (query || transmissionType || fuelType || numberOfSeats || priceSort) {
+      if (query || transmissionType || fuelType || numberOfSeats || priceSort || maxPrice) {
         const rentableCars = await RentableCarHelper.searchRentableCars({
           query,
           transmissionType, 
           fuelType,    
           numberOfSeats,     
           priceSort,
+          maxPrice
         });
     
         const availableCars = [];
@@ -199,7 +201,9 @@ class BookingCarHelper {
         };
       } else {
         // Business logic for fetching available vehicles
-        const rentableCars = await BookingCarRepository.getRentableCars();
+        const rentableCars = await BookingCarRepository.getRentableCars({
+          maxPrice
+        });
 
         const availableCars = [];
 

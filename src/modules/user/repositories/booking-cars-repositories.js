@@ -35,10 +35,10 @@ class BookingCarRepository {
       };
     }
 
-    // Filter by price
-    if (filters.maxPrice) {
+    // Filter by price - Updated to handle maxPrice consistently
+    if (filters.maxPrice && !isNaN(filters.maxPrice)) {
       whereClause.pricePerDay = {
-        [Op.lte]: filters.maxPrice
+        [Op.lte]: parseFloat(filters.maxPrice)
       };
     }
 

@@ -14,6 +14,7 @@ const BookingCarResolvers = {
         fuelType,
         numberOfSeats,
         priceSort,
+        maxPrice  // Add maxPrice parameter
       }
     ) => {
       const transmissionArray =
@@ -24,6 +25,9 @@ const BookingCarResolvers = {
         Array.isArray(fuelType) && fuelType.length > 0 ? fuelType : undefined;
       const seatsArray =
         Array.isArray(numberOfSeats) && numberOfSeats.length > 0 ? numberOfSeats : undefined;
+      
+      // Parse maxPrice to ensure it's a number
+      const parsedMaxPrice = maxPrice ? parseFloat(maxPrice) : undefined;
   
       return await BookingCarHelper.getAvailableCars(
         pickupDate,
@@ -32,7 +36,8 @@ const BookingCarResolvers = {
         transmissionArray,
         fuelTypeArray,
         seatsArray,
-        priceSort
+        priceSort,
+        parsedMaxPrice
       );
     },
     fetchBookings: async(_,__,{token})=>{
