@@ -62,7 +62,6 @@ class RentableCarHelper{
     
           const cars = await RentableCarsRepository.FindAllRentablesByIds(carIds);
     
-          console.log("in searching cksabbc", cars);
           return cars;
         } catch (error) {
           console.error("Error in searching rentable cars - ", error);

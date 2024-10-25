@@ -8,7 +8,7 @@ const BookingCarResolvers = {
       _,
       {
         pickupDate,
-        dropoffDate,
+        dropOffDate,
         query,
         transmissionType,
         fuelType,
@@ -16,7 +16,6 @@ const BookingCarResolvers = {
         priceSort,
       }
     ) => {
-      // Ensure the arrays are not empty
       const transmissionArray =
         Array.isArray(transmissionType) && transmissionType.length > 0
           ? transmissionType
@@ -28,7 +27,7 @@ const BookingCarResolvers = {
   
       return await BookingCarHelper.getAvailableCars(
         pickupDate,
-        dropoffDate,
+        dropOffDate,
         query,
         transmissionArray,
         fuelTypeArray,

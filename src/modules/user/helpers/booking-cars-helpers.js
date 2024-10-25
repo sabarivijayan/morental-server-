@@ -157,7 +157,7 @@ class BookingCarHelper {
 
   static async getAvailableCars(
     pickupDate,
-    dropoffDate,
+    dropOffDate,
     query,
     transmissionType,
     fuelType,
@@ -181,7 +181,7 @@ class BookingCarHelper {
           const isAvailable = await BookingCarRepository.checkCarAvailability(
             rentable.carId,
             pickupDate,
-            dropoffDate
+            dropOffDate
           );
     
           console.log(`Car ID ${rentable.carId} availability:`, isAvailable);
@@ -207,7 +207,7 @@ class BookingCarHelper {
           const isAvailable = await BookingCarRepository.checkCarAvailability(
             rentable.carId,
             pickupDate,
-            dropoffDate
+            dropOffDate
           );
           console.log(isAvailable);
           if (isAvailable) {
