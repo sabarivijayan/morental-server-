@@ -1,5 +1,6 @@
 import adminHelper from "../../helpers/admin-helper.js";
 import Admin from "../../models/admin-model.js";
+import { validateLogin } from "../../../../utils/JOI/admin-joi.js";
 
 const authResolver ={
     Query:{
@@ -18,8 +19,9 @@ const authResolver ={
 
     Mutation:{
         adminLogin: async (_, { email, password }) =>{
-            console.log("Attempting to log in admin with email: ", email);
             try {
+
+                validateLogin({email, password});
                 const admin = await adminHelper.findAdminByEmail(email);
                 if(!admin) {
                     throw new Error('Invalid credentials');

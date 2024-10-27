@@ -2,6 +2,14 @@ import { GraphQLUpload } from "graphql-upload";
 import authHelpers from "../../helpers/auth-helpers.js";
 import User from "../../models/auth-model.js";
 import { verifyToken } from "../../../../utils/jwt.js";
+import {
+  validateRegistration,
+  validateLogin,
+  validateSendOTP,
+  validateVerifyOTP,
+  validateProfileUpdate,
+  validatePasswordUpdate,
+} from "../../../../utils/JOI/user-joi.js";
 
 const userAuthResolvers = {
   Upload: GraphQLUpload,
@@ -48,12 +56,22 @@ const userAuthResolvers = {
   },
   Mutation: {
     async registerUser(_, { input }) {
-      const response = await authHelpers.registerUser(input);
-      return response;
+      try {
+        await validateRegistration(input);
+        const response = await authHelpers.registerUser(input);
+        return response;
+      } catch (error) {
+        throw new Error(error.message);
+      }
     },
     async userLogin(_, { email, password }) {
-      const response = await authHelpers.loginUser(email, password);
-      return response;
+      try {
+        await validateLogin({ email, password });
+        const response = await authHelpers.loginUser(email, password);
+        return response;
+      } catch (error) {
+        throw new Error(error.message);
+      }
     },
     async sendOTP(_, { phoneNumber }) {
       const response = await authHelpers.sendOTP(phoneNumber);
