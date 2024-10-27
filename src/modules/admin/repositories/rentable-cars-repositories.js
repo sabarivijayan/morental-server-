@@ -3,6 +3,8 @@ import Car from "../models/car-model.js";
 import Manufacturer from "../models/manufacturer-model.js";
 
 class RentableRepository {
+  
+  // Finds a rentable car by carId, if provided
   static async findRentableCarById(carId) {
     try {
       if (carId) {
@@ -15,6 +17,7 @@ class RentableRepository {
     }
   }
 
+  // Retrieves all rentable cars along with their associated car and manufacturer details
   static async findAllRentable() {
     try {
       return await Rentable.findAll({
@@ -31,20 +34,22 @@ class RentableRepository {
       });
     } catch (error) {
       throw new Error(
-        "Database error occured while fetching rentable vehicles: " +
+        "Database error occurred while fetching rentable vehicles: " +
           error.message
       );
     }
   }
 
+  // Creates a new rentable car entry in the database
   static async createRentableCars(data) {
     try {
       return await Rentable.create(data);
     } catch (error) {
-      throw new Error("Database error occured while adding rentable cars");
+      throw new Error("Database error occurred while adding rentable cars");
     }
   }
 
+  // Updates an existing rentable car by its ID, if found
   static async updateRentableCarsById(id, data) {
     try {
       const rentableCar = await Rentable.findByPk(id);
@@ -61,6 +66,7 @@ class RentableRepository {
     }
   }
 
+  // Deletes a rentable car by ID, throwing an error if the car is not found
   static async deleteRentableCarById(id) {
     try {
       const deleteRentable = await Rentable.destroy({
@@ -73,11 +79,12 @@ class RentableRepository {
       return deleteRentable;
     } catch (error) {
       throw new Error(
-        "An error occured while deleting the rentable car: " + error.message
+        "An error occurred while deleting the rentable car: " + error.message
       );
     }
   }
 
+  // Fetches a rentable car by ID
   static async getRentableCarById(id) {
     try {
       const rentableCar = await Rentable.findByPk(id);

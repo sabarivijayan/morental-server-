@@ -18,6 +18,7 @@ class AuthHelper {
 
       const response = await axios.get(sendOtpUrl);
 
+      // Check if OTP was sent successfully
       if (response.data.Status !== "Success") {
         return {
           status: "error",
@@ -46,6 +47,7 @@ class AuthHelper {
 
       const response = await axios.get(verifyOtpUrl);
 
+      // Check if OTP verification was successful
       if (response.data.Status !== "Success") {
         return {
           status: "error",
@@ -79,6 +81,7 @@ class AuthHelper {
       pincode,
     } = input;
 
+    // Check for existing user by phone number
     const existingUserByPhone = await AuthRepository.findUserByPhoneNumber(
       phoneNumber
     );
@@ -89,6 +92,7 @@ class AuthHelper {
       };
     }
 
+    // Check for existing user by email
     const existingUserByEmail = await User.findOne({ where: { email } });
     if (existingUserByEmail) {
       return {
@@ -97,6 +101,7 @@ class AuthHelper {
       };
     }
 
+    // Hash the password before storing
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = {
@@ -113,6 +118,7 @@ class AuthHelper {
       phoneNumberVerifiedAt: new Date(),
     };
 
+    // Create new user in the database
     const createdUser = await AuthRepository.createNewUser(newUser);
 
     const token = generateToken(createdUser);
@@ -128,6 +134,7 @@ class AuthHelper {
   async loginUser(email, password) {
     const user = await User.findOne({ where: { email } });
 
+    // Check if user exists
     if (!user) {
       return {
         status: "error",
@@ -136,6 +143,7 @@ class AuthHelper {
       };
     }
 
+    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return {
@@ -144,6 +152,7 @@ class AuthHelper {
       };
     }
 
+    // Check if phone number is verified
     if (!user.isPhoneNumberVerified) {
       return {
         status: "error",
@@ -171,6 +180,7 @@ class AuthHelper {
   async updateUserProfile(userId, updatedData) {
     try {
       const user = await AuthRepository.findById(userId);
+      // Check if user exists
       if (!user) {
         return {
           status: "error",
@@ -179,6 +189,7 @@ class AuthHelper {
       }
       const { password, confirmPassword, ...profileData } = updatedData;
       const updatedUser = await AuthRepository.updateUser(userId, profileData);
+      // Check if update was successful
       if (!updatedUser) {
         return {
           status: "error",
@@ -207,6 +218,7 @@ class AuthHelper {
   ) {
     try {
       const user = await AuthRepository.findById(userId);
+      // Check if user exists
       if (!user) {
         return {
           status: "error",
@@ -248,13 +260,16 @@ class AuthHelper {
       };
     }
   }
+
   async updateProfileImage(userId, profileImage) {
     try {
       const user = await AuthRepository.findById(userId);
+      // Check if user exists
       if (!user) {
         throw new Error("User not found");
       }
 
+      // If no image is provided and user has one, remove it
       if (!profileImage && user.profileImage) {
         const imagePath = user.profileImage.split("/").slice(-1)[0];
         await this.removeFromMinio(imagePath);
@@ -270,15 +285,18 @@ class AuthHelper {
         };
       }
 
+      // If a new image is provided, handle the upload
       if (profileImage) {
         const { filename } = await profileImage;
         const imagePath = `profile-images/${filename}`;
 
         const exists = await this.doesMinioObjectExist(imagePath);
+        // Remove existing image if it exists
         if (exists) {
           await this.removeFromMinio(imagePath);
         }
 
+        // Upload new image
         const imageUrl = await this.uploadToMinio(
           profileImage,
           "profile-images"
@@ -309,6 +327,7 @@ class AuthHelper {
       );
       return true;
     } catch (error) {
+      // Return false if the object does not exist
       if (error.code === "NoSuchKey" || error.message === "Not Found") {
         return false;
       }

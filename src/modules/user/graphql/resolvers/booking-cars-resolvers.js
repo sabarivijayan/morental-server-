@@ -4,6 +4,7 @@ import User from "../../models/auth-model.js";
 
 const BookingCarResolvers = {
   Query: {
+    // Fetches available cars based on filters like dates, fuel type, and price range
     getAvailableCars: async (
       _,
       {
@@ -40,8 +41,8 @@ const BookingCarResolvers = {
         parsedMaxPrice
       );
     },
-    fetchBookings: async(_,__,{token})=>{
-      
+    // Fetches all bookings for the authenticated user
+    fetchBookings: async(_,__,{token})=>{      
       try {
         if(!token){
           console.log("You are not authorized! Auth token is missing!!");
@@ -49,7 +50,7 @@ const BookingCarResolvers = {
             status: false,
             message: "You are not authorized! Auth token is missing!!",
             data: [],
-          }
+          };
         }
         const decodedToken = verifyToken(token.replace('Bearer ', ''));
         const userId = decodedToken.id;
@@ -65,7 +66,9 @@ const BookingCarResolvers = {
       }
     },
   },
+  
   Mutation: {
+    // Creates a payment order for booking, requiring user authentication
     generatePaymentOrder: async (_, { totalPrice, bookingInput }, { token }) => {
       try {
         if (!token) {
@@ -91,6 +94,8 @@ const BookingCarResolvers = {
           user.id,
           bookingInput
         );
+        
+        // Returns order details if successful
         return {
           status: "success",
           message: "Payment order created successfully",
@@ -109,6 +114,7 @@ const BookingCarResolvers = {
       }
     },
 
+    // Verifies the payment and then creates the booking if payment is valid
     verifyPaymentAndCreateBooking: async (
       _,
       { paymentDetails, bookingInput },
@@ -125,6 +131,7 @@ const BookingCarResolvers = {
         const decodedToken = verifyToken(token.replace('Bearer ', ''));
         const userId = decodedToken.id;
 
+        // Attach user ID to the booking input
         bookingInput.userId = userId;
 
         const bookingResponse = await BookingCarHelper.verifyPaymentAndCreateBooking(paymentDetails, bookingInput);
@@ -134,7 +141,7 @@ const BookingCarResolvers = {
         return {
           status: "error",
           message: 'Payment could not be verified and booking creation failed.',
-        }
+        };
       }
     },
   },

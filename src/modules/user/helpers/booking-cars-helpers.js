@@ -6,13 +6,14 @@ import RentableCarHelper from "./rentable-cars-helpers.js";
 
 dotenv.config();
 
+// Initialize Razorpay client with credentials from environment variables
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 class BookingCarHelper {
-
+  // Create a payment order for the car booking
   static async createPaymentOrder(totalPrice, userId, bookingInput) {
     try {
       // Step 1: Check vehicle availability
@@ -22,6 +23,7 @@ class BookingCarHelper {
         new Date(bookingInput.dropOffDate)
       );
 
+      // If the car is not available, return an error message
       if (!isAvailable) {
         return {
           status: "error",
@@ -33,7 +35,7 @@ class BookingCarHelper {
       const options = {
         amount: totalPrice * 100, // Amount in paise (INR)
         currency: "INR",
-        receipt: `receipt_${Date.now()}`,
+        receipt: `receipt_${Date.now()}`, // Unique receipt for tracking
       };
 
       const razorpayOrder = await razorpay.orders.create(options);
@@ -51,10 +53,11 @@ class BookingCarHelper {
         address: bookingInput.address,
         phoneNumber: bookingInput.phoneNumber,
         totalPrice: totalPrice,
-        status: "pending",
+        status: "pending", // Set initial status to "pending"
         razorpayOrderId: razorpayOrder.id,
       };
 
+      // Create a new booking record in the database
       const newBooking = await BookingCarRepository.createBooking(bookingData);
 
       // Step 4: Return the Razorpay order and booking data
@@ -71,11 +74,10 @@ class BookingCarHelper {
     }
   }
 
+  // Verify payment and create a booking
   static async verifyPaymentAndCreateBooking(paymentDetails, bookingInput) {
-    const { razorpayOrderId, razorpayPaymentId, razorpaySignature } =
-      paymentDetails;
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = paymentDetails;
 
-      console.log("id",bookingInput)
     try {
       // Step 1: Generate signature for verification
       const generatedSignature = crypto
@@ -91,7 +93,6 @@ class BookingCarHelper {
         };
       }
 
-      
       // Step 3: Check car availability again before finalizing the booking
       const isAvailable = await BookingCarRepository.checkCarAvailability(
         bookingInput.rentableId,
@@ -99,6 +100,7 @@ class BookingCarHelper {
         new Date(bookingInput.dropOffDate)
       );
 
+      // If the car is no longer available, return an error message
       if (!isAvailable) {
         return {
           status: "error",
@@ -112,7 +114,6 @@ class BookingCarHelper {
         "booked"
       );
 
-
       // Step 5: Return a success message with booking details
       return {
         status: "success",
@@ -125,12 +126,12 @@ class BookingCarHelper {
     }
   }
 
+  // Fetch all bookings made by a user
   static async fetchBookingsByUser(userId) {
     try {
       const bookings = await BookingCarRepository.fetchBookingsByUserId(userId);
 
-      console.log(bookings)
-
+      // If no bookings found, return a message indicating that
       if (!bookings || bookings.length === 0) {
         return {
           status: true,
@@ -139,7 +140,7 @@ class BookingCarHelper {
         };
       }
 
-      console.log(bookings);
+      // Return the bookings if found
       return {
         status: true,
         message: "Bookings fetched successfully.",
@@ -155,6 +156,7 @@ class BookingCarHelper {
     }
   }
 
+  // Get available cars based on various filters
   static async getAvailableCars(
     pickupDate,
     dropOffDate,
@@ -167,17 +169,18 @@ class BookingCarHelper {
   ) {
     try {
       if (query || transmissionType || fuelType || numberOfSeats || priceSort || maxPrice) {
+        // If filters are provided, search for rentable cars
         const rentableCars = await RentableCarHelper.searchRentableCars({
           query,
-          transmissionType, 
-          fuelType,    
-          numberOfSeats,     
+          transmissionType,
+          fuelType,
+          numberOfSeats,
           priceSort,
-          maxPrice
+          maxPrice,
         });
-    
+
         const availableCars = [];
-    
+
         // Step 4: Check availability for each rentable vehicle
         for (const rentable of rentableCars) {
           const isAvailable = await BookingCarRepository.checkCarAvailability(
@@ -185,40 +188,41 @@ class BookingCarHelper {
             pickupDate,
             dropOffDate
           );
-    
-          console.log(`Car ID ${rentable.carId} availability:`, isAvailable);
-    
+
+          // If the car is available, add it to the availableCars array
           if (isAvailable) {
             availableCars.push(rentable);
           }
         }
-    
-        console.log("Available Cars after filtering:", availableCars);
+
+        // Return the list of available cars after filtering
         return {
           status: "success",
           message: "success",
           data: availableCars,
         };
       } else {
-        // Business logic for fetching available vehicles
+        // If no filters are provided, fetch all rentable cars with a price limit
         const rentableCars = await BookingCarRepository.getRentableCars({
-          maxPrice
+          maxPrice,
         });
 
         const availableCars = [];
 
+        // Check availability for each rentable vehicle
         for (const rentable of rentableCars) {
           const isAvailable = await BookingCarRepository.checkCarAvailability(
             rentable.carId,
             pickupDate,
             dropOffDate
           );
-          console.log(isAvailable);
+          // If the car is available, add it to the availableCars array
           if (isAvailable) {
             availableCars.push(rentable);
           }
         }
-        console.log("available", availableCars);
+
+        // Return the list of available cars
         return {
           status: "success",
           message: "success",

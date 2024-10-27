@@ -1,9 +1,13 @@
 import Car from "../models/car-model.js";
 import { deletecarFromTypesense } from "../../../config/typesense.js";
 import Rentable from "../models/rentable-cars-model.js";
+
 class CarRepository {
+  
+  // Creates a new car record in the database
   static async createCar(carData) {
     try {
+      // Create a new car entry in the Car model
       const car = await Car.create(carData);
       return {
         id: car.id,
@@ -25,8 +29,10 @@ class CarRepository {
     }
   }
 
+  // Finds a car by its name and optional manufacturer ID
   static async findCarByNameAndManufacturer(name, manufacturerId) {
     try {
+      // Search for the car based on name, and optionally manufacturerId
       if (!manufacturerId) {
         const car = await Car.findOne({
           where: {
@@ -52,6 +58,7 @@ class CarRepository {
     }
   }
 
+  // Retrieves all car records from the database
   static async getAllCars() {
     try {
       const cars = await Car.findAll();
@@ -62,14 +69,17 @@ class CarRepository {
     }
   }
 
+  // Deletes a car by its ID, including related records in Typesense
   static async deleteCarById(id) {
     try {
+      // Find all rentables associated with this car ID
       const rentables = await Rentable.findAll({
         where: {
           carId: id,
         },
       });
 
+      // Check if there are any rentables associated with this car
       if (rentables.length === 0) {
         console.warn(`No rentable cars found for this car ID: ${id}`);
         throw new Error(
@@ -77,13 +87,17 @@ class CarRepository {
         );
       }
 
+      // Delete each rentable from Typesense
       for (const rentable of rentables) {
         await deletecarFromTypesense(rentable.id);
       }
+
+      // Delete the car record from the database
       const deletedCar = await Car.destroy({
         where: { id },
       });
 
+      // Return null if no car was deleted, otherwise return the deleted car's ID
       if (deletedCar === 0) {
         return null;
       }
@@ -94,6 +108,7 @@ class CarRepository {
     }
   }
 
+  // Updates a car by its ID with the provided data
   static async updateCarById(id, carData) {
     try {
       const car = await Car.findByPk(id);
@@ -101,6 +116,7 @@ class CarRepository {
         throw new Error("Car not found");
       }
 
+      // Update the car with the provided data
       await car.update(carData);
       return car;
     } catch (error) {
@@ -108,18 +124,21 @@ class CarRepository {
     }
   }
 
+  // Updates the rental status of a car by its ID
   static async updateCarStatus(carId, isRentedOrNot) {
     try {
       const car = await Car.findByPk(carId);
+      // Update the car's rental status
       const updateCarStatus = await car.update({
         isRentedOrNot: isRentedOrNot,
       });
     } catch (error) {
       console.error("Error updating car status: ", error);
-      throw new Error("failed to update car status");
+      throw new Error("Failed to update car status");
     }
   }
 
+  // Retrieves a single car by its ID
   static async getCarById(id) {
     try {
       const car = await Car.findByPk(id);

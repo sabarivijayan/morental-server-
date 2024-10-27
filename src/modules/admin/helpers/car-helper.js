@@ -3,6 +3,7 @@ import minioClient from "../../../config/minio.js";
 import mime from "mime-types";
 
 class CarHelper {
+  // Creates a new car entry after validating that the car does not already exist
   static async createCar({
     name,
     description,
@@ -17,6 +18,7 @@ class CarHelper {
     year,
   }) {
     try {
+      // Check if a car with the same name and manufacturer exists
       const existingCar = await CarRepository.findCarByNameAndManufacturer(
         name,
         manufacturerId
@@ -25,17 +27,20 @@ class CarHelper {
         throw new Error("Car already exists");
       }
 
+      // Upload primary image to MinIO and get the URL
       const primaryImageUrl = await this.uploadToMinio(
         primaryImage,
         `car/${name}/primary`
       );
 
+      // Upload all secondary images to MinIO and get their URLs
       const secondaryImagesUrls = await Promise.all(
         secondaryImages.map((image) =>
           this.uploadToMinio(image, `car/${name}/secondary`)
         )
       );
 
+      // Create the car entry in the database
       const car = await CarRepository.createCar({
         manufacturerId,
         name,
@@ -53,11 +58,11 @@ class CarHelper {
       return car;
     } catch (error) {
       console.error("Error adding car: ", error.message);
-
       throw new Error(error.message || "Failed to add car");
     }
   }
 
+  // Uploads an image to MinIO storage and returns the URL
   static async uploadToMinio(file, folder) {
     try {
       const { createReadStream, filename } = await file;
@@ -65,6 +70,7 @@ class CarHelper {
       const uniqueFilename = `${folder}/${filename}`;
       const contentType = mime.lookup(filename) || "application/octet-stream";
 
+      // Upload the image to MinIO
       await new Promise((resolve, reject) => {
         minioClient.putObject(
           process.env.MINIO_BUCKET_NAME,
@@ -80,6 +86,7 @@ class CarHelper {
         );
       });
 
+      // Generate the URL for the uploaded image
       const imageUrl = `http://localhost:9000/${process.env.MINIO_BUCKET_NAME}/${uniqueFilename}`;
 
       return imageUrl;
@@ -89,6 +96,7 @@ class CarHelper {
     }
   }
 
+  // Retrieves all cars from the database
   static async getCars() {
     try {
       return await CarRepository.getAllCars();
@@ -98,8 +106,10 @@ class CarHelper {
     }
   }
 
+  // Deletes an image from MinIO storage using its URL
   static async deleteImageFromMinio(imageUrl) {
     try {
+      // Extract the file path from the image URL
       const filePath = imageUrl.replace(
         `http:localhost:9000/${process.env.MINIO_BUCKET_NAME}/`,
         ""
@@ -122,6 +132,7 @@ class CarHelper {
     }
   }
 
+  // Deletes a car by ID, including associated images from MinIO
   static async deleteCarById(id) {
     try {
       const car = await CarRepository.getCarById(id);
@@ -129,8 +140,10 @@ class CarHelper {
         throw new Error("Car not found");
       }
 
+      // Delete car record from the database
       const deletedCar = await CarRepository.deleteCarById(id);
 
+      // Delete primary and secondary images from MinIO
       await this.deleteImageFromMinio(car.primaryImageUrl);
       await Promise.all(
         car.secondaryImagesUrls.map((imageUrl) =>
@@ -145,6 +158,7 @@ class CarHelper {
     }
   }
 
+  // Retrieves a car by its ID
   static async getCarById(id) {
     try {
       const car = await CarRepository.getCarById(id);
@@ -155,6 +169,7 @@ class CarHelper {
     }
   }
 
+  // Updates a car's details, including images if new ones are provided
   static async updateCar({
     id,
     name,
@@ -179,12 +194,14 @@ class CarHelper {
         name
       );
 
-      // Allow the update if the car we're updating has the same name and manufacturer (same ID)
+      // Prevent update if another car with the same name and manufacturer exists
       if (existingCar.status && (car.name !== name)) {
         throw new Error(
           "Car with the same name and manufacturer already exists"
         );
       }
+      
+      // Update images if new ones are provided
       let primaryImageUrl = car.primaryImageUrl;
       let secondaryImagesUrls = car.secondaryImagesUrls;
 
@@ -203,6 +220,7 @@ class CarHelper {
         );
       }
 
+      // Update car record in the database
       const updateCar = await CarRepository.updateCarById(id, {
         name,
         type,
@@ -220,8 +238,6 @@ class CarHelper {
       throw new Error(error.message || "Failed to update car");
     }
   }
-
-  
 }
 
 export default CarHelper;

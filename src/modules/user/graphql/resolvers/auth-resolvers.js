@@ -13,15 +13,17 @@ import {
 
 const userAuthResolvers = {
   Upload: GraphQLUpload,
+  
   Query: {
+    // Resolver to fetch a user by their token
     fetchUser: async (_, __, { token }) => {
       try {
         if (!token) {
           throw new Error("Authorization token is not available");
         }
-        const strippedToken = token.replace("Bearer ", "").trim();
-        const decodedToken = verifyToken(strippedToken);
 
+        const strippedToken = token.replace("Bearer ", "").trim();
+        const decodedToken = verifyToken(strippedToken); // Decode token to get user ID
         const user = await User.findByPk(decodedToken.id);
 
         if (!user) {
@@ -32,6 +34,7 @@ const userAuthResolvers = {
           };
         }
 
+        // Return user details if found
         return {
           status: "success",
           message: "User found",
@@ -54,40 +57,46 @@ const userAuthResolvers = {
       }
     },
   },
+  
   Mutation: {
+    // Resolver for user registration
     async registerUser(_, { input }) {
       try {
-        await validateRegistration(input);
+        await validateRegistration(input); // Validate input data
         const response = await authHelpers.registerUser(input);
         return response;
       } catch (error) {
         throw new Error(error.message);
       }
     },
+    
+    // Resolver for user login
     async userLogin(_, { email, password }) {
       try {
-        await validateLogin({ email, password });
+        await validateLogin({ email, password }); // Validate credentials
         const response = await authHelpers.loginUser(email, password);
         return response;
       } catch (error) {
         throw new Error(error.message);
       }
     },
+    
+    // Resolver to send an OTP to the user's phone number
     async sendOTP(_, { phoneNumber }) {
       const response = await authHelpers.sendOTP(phoneNumber);
       return response;
     },
+    
+    // Resolver to verify the OTP
     async verifyOTP(_, { phoneNumber, otp }) {
-      // Updated parameter
       const response = await authHelpers.verifyOTP(phoneNumber, otp);
       return response;
     },
+    
+    // Resolver to update the user's profile image
     async updateProfileImage(_, { userId, profileImage }) {
       try {
-        const response = await authHelpers.updateProfileImage(
-          userId,
-          profileImage
-        );
+        const response = await authHelpers.updateProfileImage(userId, profileImage);
         return response;
       } catch (error) {
         console.error("Error updating profile picture: ", error.message);
@@ -98,6 +107,8 @@ const userAuthResolvers = {
         };
       }
     },
+    
+    // Resolver to update user profile information
     async updateUserProfile(_, { userId, input }) {
       try {
         const response = await authHelpers.updateUserProfile(userId, input);
@@ -111,6 +122,8 @@ const userAuthResolvers = {
         };
       }
     },
+    
+    // Resolver to update the user's password
     async updatePassword(_, { userId, input }) {
       try {
         const response = await authHelpers.updatePassword(userId, input);
@@ -124,4 +137,5 @@ const userAuthResolvers = {
     },
   },
 };
+
 export default userAuthResolvers;

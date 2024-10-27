@@ -1,3 +1,4 @@
+// Import necessary resolvers and type definitions for the admin schema
 import authResolver from "./resolvers/auth-resolvers.js";
 import authTypeDefs from "./typeDefs/auth-type-defs.js";
 
@@ -13,7 +14,23 @@ import RentableCarTypeDefs from "./typeDefs/rentable-car-type-defs.js";
 import BookingAdminResolver from "./resolvers/booking-resolver.js";
 import BookingAdminTypeDefs from "./typeDefs/bookings-type-defs.js";
 
-const adminTypeDefs = [authTypeDefs, manufactureTypeDefs, CarTypeDefs, RentableCarTypeDefs, BookingAdminTypeDefs]; // Combine typeDefs
-const adminResolvers = [authResolver, manufacturerResolver, carResolvers, RentableCarResolvers, BookingAdminResolver]; // Combine resolvers
+// Combine type definitions for the admin schema
+const adminTypeDefs = [
+  authTypeDefs, 
+  manufactureTypeDefs, 
+  CarTypeDefs, 
+  RentableCarTypeDefs, 
+  BookingAdminTypeDefs
+];
 
+// Combine resolvers for the admin schema
+const adminResolvers = [
+  authResolver, 
+  manufacturerResolver, 
+  carResolvers, 
+  RentableCarResolvers, 
+  BookingAdminResolver
+];
+
+// Export the combined type definitions and resolvers for the admin schema
 export { adminTypeDefs, adminResolvers };

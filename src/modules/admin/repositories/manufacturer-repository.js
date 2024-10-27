@@ -1,14 +1,14 @@
-import Manufacturer from "../models/manufacturer-model.js"; // Sequelize model
+import Manufacturer from "../models/manufacturer-model.js"; // Sequelize model for Manufacturer
 import { deletecarFromTypesense } from "../../../config/typesense.js";
 import Car from "../models/car-model.js";
 import Rentable from "../models/rentable-cars-model.js";
+
 class ManufacturerRepository {
+  
+  // Creates a new manufacturer in the database
   static async createManufacturer({ name, country }) {
     try {
-      const manufacturer = await Manufacturer.create({
-        name,
-        country,
-      });
+      const manufacturer = await Manufacturer.create({ name, country });
       return manufacturer;
     } catch (error) {
       console.error("Error creating manufacturer in the database:", error);
@@ -16,6 +16,7 @@ class ManufacturerRepository {
     }
   }
 
+  // Retrieves all manufacturers from the database
   static async findAll() {
     try {
       return await Manufacturer.findAll();
@@ -25,6 +26,7 @@ class ManufacturerRepository {
     }
   }
 
+  // Finds a specific manufacturer by its ID
   static async findManufacturerById(id) {
     try {
       const manufacturer = await Manufacturer.findByPk(id);
@@ -38,6 +40,7 @@ class ManufacturerRepository {
     }
   }
 
+  // Finds a manufacturer by its name
   static async findManufacturerByName(name) {
     try {
       const manufacturer = await Manufacturer.findOne({ where: { name } });
@@ -48,6 +51,7 @@ class ManufacturerRepository {
     }
   }
 
+  // Updates a manufacturer's details using the provided updates
   static async updateManufacturer(id, updates) {
     try {
       const manufacturer = await Manufacturer.findByPk(id);
@@ -62,33 +66,39 @@ class ManufacturerRepository {
     }
   }
 
+  // Deletes a manufacturer by ID, along with associated cars and rentables
   static async deleteManufacturer(id) {
     try {
+      // Fetch all cars associated with this manufacturer
+      const cars = await Car.findAll({
+        where: { manufacturerId: id },
+      });
 
-      const cars = await Car.findAll(
-        {
-          where: {manufacturerId: id}
-        }
-      )
-
-      if(cars.length === 0){
-        console.log(`No vehicle were found for the following manufacturer Id: ${id}`)
+      // Log if no cars are associated with the manufacturer
+      if (cars.length === 0) {
+        console.log(`No vehicles were found for the following manufacturer ID: ${id}`);
       }
 
-      for(const car of cars){
-        const rentables = await Rentable.findAll({where: {carId: car.id}});
+      // Iterate over each car to delete associated rentables and the car itself
+      for (const car of cars) {
+        const rentables = await Rentable.findAll({ where: { carId: car.id } });
 
-        for(const rentable of rentables){
+        // Delete each rentable from Typesense and the Rentable table
+        for (const rentable of rentables) {
           await deletecarFromTypesense(rentable.id);
-          await Rentable.destroy({where: { id: rentable.id}})
+          await Rentable.destroy({ where: { id: rentable.id } });
         }
-        await Car.destroy({where: {id: car.id}})
+        
+        // Delete the car record from the database
+        await Car.destroy({ where: { id: car.id } });
       }
+
+      // Delete the manufacturer from the database
       const result = await Manufacturer.destroy({ where: { id } });
       if (result === 0) {
-        throw new Error('Manufacturer not found or already deleted');
+        throw new Error("Manufacturer not found or already deleted");
       }
-      return result > 0;
+      return result > 0; // Return true if the manufacturer was deleted successfully
     } catch (error) {
       console.error("Error deleting manufacturer:", error);
       throw new Error("Failed to delete manufacturer");
