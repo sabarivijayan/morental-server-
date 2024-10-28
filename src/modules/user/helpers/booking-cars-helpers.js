@@ -3,6 +3,7 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import BookingCarRepository from "../repositories/booking-cars-repositories.js";
 import RentableCarHelper from "./rentable-cars-helpers.js";
+import sequelize from "../../../config/database.js";
 
 dotenv.config();
 
@@ -15,12 +16,14 @@ const razorpay = new Razorpay({
 class BookingCarHelper {
   // Create a payment order for the car booking
   static async createPaymentOrder(totalPrice, userId, bookingInput) {
+    const transaction = await sequelize.transaction();
     try {
       // Step 1: Check vehicle availability
       const isAvailable = await BookingCarRepository.checkCarAvailability(
         bookingInput.rentableId,
         new Date(bookingInput.pickUpDate),
-        new Date(bookingInput.dropOffDate)
+        new Date(bookingInput.dropOffDate),
+        { lock: transaction.LOCK.UPDATE } // Add lock to the availability check
       );
 
       // If the car is not available, return an error message
@@ -60,6 +63,9 @@ class BookingCarHelper {
       // Create a new booking record in the database
       const newBooking = await BookingCarRepository.createBooking(bookingData);
 
+      // Commit the transaction if all operations succeed
+      await transaction.commit();
+
       // Step 4: Return the Razorpay order and booking data
       return {
         status: "success",
@@ -69,6 +75,7 @@ class BookingCarHelper {
         bookingId: newBooking.id,
       };
     } catch (error) {
+      await transaction.rollback();
       console.error("Error in createPaymentOrder:", error);
       throw new Error("Failed to create payment order.");
     }
@@ -158,7 +165,7 @@ class BookingCarHelper {
 
   // Get available cars based on various filters
   static async getAvailableCars(
-    pickupDate,
+    pickUpDate,
     dropOffDate,
     query,
     transmissionType,
@@ -185,7 +192,7 @@ class BookingCarHelper {
         for (const rentable of rentableCars) {
           const isAvailable = await BookingCarRepository.checkCarAvailability(
             rentable.carId,
-            pickupDate,
+            pickUpDate,
             dropOffDate
           );
 
@@ -213,7 +220,7 @@ class BookingCarHelper {
         for (const rentable of rentableCars) {
           const isAvailable = await BookingCarRepository.checkCarAvailability(
             rentable.carId,
-            pickupDate,
+            pickUpDate,
             dropOffDate
           );
           // If the car is available, add it to the availableCars array

@@ -7,6 +7,7 @@ import { graphqlUploadExpress } from "graphql-upload"; // Import middleware for 
 import dotenv from "dotenv"; // Import dotenv for environment variable management
 import "./modules/admin/models/relations-model.js"; // Import model relations (if needed)
 import seedAdmin from "./seed.js"; // Import admin seeding script
+import { startCleanupCron } from "./utils/bookingCleanup.js";
 dotenv.config(); // Load environment variables from .env file
 
 const app = express(); // Create an Express application
@@ -57,6 +58,9 @@ const startServer = async () => {
     try {
       await sequelize.sync({ alter: true }); // Sync the database
       console.log("Database synced successfully."); // Log successful sync
+
+      startCleanupCron();
+      console.log("Cleanup cron job started.");
     } catch (error) {
       console.error("Error syncing database: ", error); // Log sync errors
     }

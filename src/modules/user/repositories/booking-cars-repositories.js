@@ -15,7 +15,7 @@ class BookingCarRepository {
     };
 
     const carWhereClause = {};
-    
+
     // Filter by number of seats if specified
     if (filters.numberOfSeats && filters.numberOfSeats.length > 0) {
       carWhereClause.numberOfSeats = {
@@ -47,9 +47,9 @@ class BookingCarRepository {
     // Sorting options for the results
     let order = [];
     if (filters.sortBy) {
-      const sortOrder = filters.sortOrder === 'DESC' ? 'DESC' : 'ASC'; // Determine sort order
-      if (filters.sortBy === 'price') {
-        order.push(['pricePerDay', sortOrder]); // Sort by price per day
+      const sortOrder = filters.sortOrder === "DESC" ? "DESC" : "ASC"; // Determine sort order
+      if (filters.sortBy === "price") {
+        order.push(["pricePerDay", sortOrder]); // Sort by price per day
       }
     }
 
@@ -76,62 +76,75 @@ class BookingCarRepository {
 
   // Check if a car is available for the specified rental period
   static async checkCarAvailability(id, pickUpDate, dropOffDate) {
-    const rentableCar = await Rentable.findByPk(id); // Find the car by its ID
-    
-    if (!rentableCar) {
-      throw new Error("Car not found."); // Throw an error if the car does not exist
-    }
+    const transaction = await Rentable.sequelize.transaction();
 
-    const finalAvailableQuantity = rentableCar.availableQuantity; // Get available quantity
-    const emptyBookings = await BookingCar.findAll(); // Fetch existing bookings
+    try {
+      // Lock the car record for the specified car ID
+      const rentableCar = await Rentable.findByPk(id, {
+        lock: transaction.LOCK.UPDATE,
+        transaction,
+      });
 
-    // If there are no bookings, the car is available
-    if (emptyBookings.length === 0) {
-      return true; // Car is available
-    }
+      if (!rentableCar) {
+        throw new Error("Car not found.");
+      }
 
-    // Check for double bookings within the specified rental period
-    const doubleBookings = await BookingCar.findAll({
-      where: {
-        carId: id,
-        status: "booked", // Only consider booked statuses
-        [Op.or]: [
-          {
-            pickUpDate: {
-              [Op.between]: [pickUpDate, dropOffDate], // Check if the pick-up date overlaps
+      const finalAvailableQuantity = rentableCar.availableQuantity;
+
+      // Ensure no double bookings
+      const doubleBookings = await BookingCar.findAll({
+        where: {
+          carId: id,
+          status: "booked",
+          [Sequelize.Op.or]: [
+            {
+              pickUpDate: {
+                [Sequelize.Op.between]: [pickUpDate, dropOffDate],
+              },
             },
-          },
-          {
-            dropOffDate: {
-              [Op.between]: [pickUpDate, dropOffDate], // Check if the drop-off date overlaps
+            {
+              dropOffDate: {
+                [Sequelize.Op.between]: [pickUpDate, dropOffDate],
+              },
             },
-          },
+            {
+              [Sequelize.Op.and]: [
+                { pickUpDate: { [Sequelize.Op.lte]: pickUpDate } },
+                { dropOffDate: { [Sequelize.Op.gte]: dropOffDate } },
+              ],
+            },
+          ],
+        },
+        transaction,
+      });
+
+      const bookedCount = doubleBookings.length;
+      const availableQuantity = finalAvailableQuantity - bookedCount;
+
+      // If available, proceed to booking
+      if (availableQuantity > 0) {
+        const booking = await BookingCar.create(
           {
-            [Op.and]: [
-              { pickUpDate: { [Op.lte]: pickUpDate } }, // Check if booking starts before or on pick-up date
-              { dropOffDate: { [Op.gte]: dropOffDate } }, // Check if booking ends after or on drop-off date
-            ],
+            carId: id,
+            userId,
+            pickUpDate,
+            dropOffDate,
+            status: "pending",
           },
-        ],
-      },
-    });
+          { transaction }
+        );
 
-    const bookedCount = doubleBookings.length; // Count overlapping bookings
-    const availableQuantity = finalAvailableQuantity - bookedCount; // Calculate remaining available cars
-    return availableQuantity > 0; // Return true if at least one car is available
-  }
-
-  // Get existing booking for a user within the specified rental dates
-  static async getExistingBooking(userId, carId, pickUpDate, dropOffDate) {
-    const existingBooking = await BookingCar.findOne({
-      where: {
-        userId,
-        carId,
-        pickUpDate: new Date(pickUpDate), // Convert to date object
-        dropOffDate: new Date(dropOffDate), // Convert to date object
-      },
-    });
-    return existingBooking; // Return the existing booking if found
+        await transaction.commit(); // Commit transaction if successful
+        return booking;
+      } else {
+        await transaction.rollback();
+        return null; // No available cars
+      }
+    } catch (error) {
+      await transaction.rollback(); // Rollback if an error occurs
+      console.error("Error during car booking:", error);
+      throw error;
+    }
   }
 
   // Create a new booking with the provided data
