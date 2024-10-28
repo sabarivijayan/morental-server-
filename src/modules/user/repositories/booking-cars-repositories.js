@@ -96,21 +96,21 @@ class BookingCarRepository {
         where: {
           carId: id,
           status: "booked",
-          [Sequelize.Op.or]: [
+          [Op.or]: [
             {
               pickUpDate: {
-                [Sequelize.Op.between]: [pickUpDate, dropOffDate],
+                [Op.between]: [pickUpDate, dropOffDate],
               },
             },
             {
               dropOffDate: {
-                [Sequelize.Op.between]: [pickUpDate, dropOffDate],
+                [Op.between]: [pickUpDate, dropOffDate],
               },
             },
             {
-              [Sequelize.Op.and]: [
-                { pickUpDate: { [Sequelize.Op.lte]: pickUpDate } },
-                { dropOffDate: { [Sequelize.Op.gte]: dropOffDate } },
+              [Op.and]: [
+                { pickUpDate: { [Op.lte]: pickUpDate } },
+                { dropOffDate: { [Op.gte]: dropOffDate } },
               ],
             },
           ],
@@ -121,25 +121,9 @@ class BookingCarRepository {
       const bookedCount = doubleBookings.length;
       const availableQuantity = finalAvailableQuantity - bookedCount;
 
-      // If available, proceed to booking
-      if (availableQuantity > 0) {
-        const booking = await BookingCar.create(
-          {
-            carId: id,
-            userId,
-            pickUpDate,
-            dropOffDate,
-            status: "pending",
-          },
-          { transaction }
-        );
-
-        await transaction.commit(); // Commit transaction if successful
-        return booking;
-      } else {
-        await transaction.rollback();
-        return null; // No available cars
-      }
+      await transaction.commit(); // Commit transaction if successful
+      
+      return availableQuantity > 0
     } catch (error) {
       await transaction.rollback(); // Rollback if an error occurs
       console.error("Error during car booking:", error);

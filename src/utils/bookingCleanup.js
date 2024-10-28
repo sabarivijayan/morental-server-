@@ -17,8 +17,6 @@ export function startCleanupCron() {
           },
         }
       );
-
-      console.log("Expired pending bookings marked as failed");
     } catch (error) {
       console.error("Error in cleanup cron job:", error);
     }
