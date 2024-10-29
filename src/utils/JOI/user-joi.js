@@ -34,14 +34,6 @@
 //     .max(255)
 //     .messages(customMessages),
 
-//   phoneNumber: Joi.string()
-//     .required()
-//     .pattern(/^[0-9]{10}$/)
-//     .messages({
-//       ...customMessages,
-//       'string.pattern.base': 'Phone number must be 10 digits'
-//     }),
-
 //   password: Joi.string()
 //     .required()
 //     .min(8)
@@ -104,35 +96,6 @@
 //     .min(8)
 //     .max(100)
 //     .messages(customMessages)
-// }).options({ abortEarly: false });
-
-// // OTP validation schemas
-// export const sendOTPSchema = Joi.object({
-//   phoneNumber: Joi.string()
-//     .required()
-//     .pattern(/^[0-9]{10}$/)
-//     .messages({
-//       ...customMessages,
-//       'string.pattern.base': 'Phone number must be 10 digits'
-//     })
-// }).options({ abortEarly: false });
-
-// export const verifyOTPSchema = Joi.object({
-//   phoneNumber: Joi.string()
-//     .required()
-//     .pattern(/^[0-9]{10}$/)
-//     .messages({
-//       ...customMessages,
-//       'string.pattern.base': 'Phone number must be 10 digits'
-//     }),
-  
-//   otp: Joi.string()
-//     .required()
-//     .pattern(/^[0-9]{6}$/)
-//     .messages({
-//       ...customMessages,
-//       'string.pattern.base': 'OTP must be 6 digits'
-//     })
 // }).options({ abortEarly: false });
 
 // // Profile update validation schema
@@ -219,7 +182,5 @@
 
 // export const validateRegistration = (data) => validateInput(registerSchema, data);
 // export const validateLogin = (data) => validateInput(loginSchema, data);
-// export const validateSendOTP = (data) => validateInput(sendOTPSchema, data);
-// export const validateVerifyOTP = (data) => validateInput(verifyOTPSchema, data);
 // export const validateProfileUpdate = (data) => validateInput(updateProfileSchema, data);
 // export const validatePasswordUpdate = (data) => validateInput(updatePasswordSchema, data);
