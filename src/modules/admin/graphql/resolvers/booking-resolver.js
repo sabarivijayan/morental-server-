@@ -1,6 +1,6 @@
-import { verifyToken } from "../../../../utils/jwt.js";
 import BookingAdminHelper from "../../helpers/booking-helper.js";
-
+import {generateBookingsExcel, generateFilename} from "../../../../utils/excel-export.js"
+import { generateBookingsPDF, generatePDFFilename } from "../../../../utils/pdf-export.js";
 /**
  * BookingAdminResolver is a GraphQL resolver that handles queries and mutations related to booking administration.
  */
@@ -63,6 +63,77 @@ const BookingAdminResolver = {
         };
       }
     },
+    exportBookingsExcel: async (_, __, { req }) => {
+      try {
+        // Get all bookings
+        const bookingsResponse = await BookingAdminHelper.getAllBookings();
+        
+        // Check if we have valid booking data
+        if (!bookingsResponse.status || !bookingsResponse.data) {
+          throw new Error('Failed to fetch booking data');
+        }
+
+        // Generate Excel file
+        const buffer = generateBookingsExcel(bookingsResponse);
+        
+        if (!buffer) {
+          throw new Error('Failed to generate Excel file');
+        }
+
+        return {
+          status: true,
+          message: 'Excel file generated successfully',
+          data: {
+            buffer: buffer.toString('base64'),
+            filename: generateFilename()
+          }
+        };
+      } catch (error) {
+        console.error('Error generating Excel file:', error);
+        return {
+          status: false,
+          message: `Failed to generate Excel file: ${error.message}`,
+          data: null
+        };
+      }
+    },
+
+    exportBookingsPDF: async (_, __, { req }) => {
+      try {
+        // Fetch bookings data
+        const bookingsResponse = await BookingAdminHelper.getAllBookings();
+
+        if (!bookingsResponse.status || !bookingsResponse.data) {
+          throw new Error('Failed to fetch booking data');
+        }
+
+        // Generate PDF
+        const doc = generateBookingsPDF(bookingsResponse);
+        
+        if (!doc) {
+          throw new Error('Failed to generate PDF document');
+        }
+
+        // Convert PDF to buffer using the correct method
+        const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
+
+        return {
+          status: true,
+          message: 'PDF file generated successfully',
+          data: {
+            buffer: pdfBuffer.toString('base64'),
+            filename: generatePDFFilename()
+          }
+        };
+      } catch (error) {
+        console.error('Error generating PDF file:', error);
+        return {
+          status: false,
+          message: `Failed to generate PDF file: ${error.message}`,
+          data: null
+        };
+      }
+    }
   },
 };
 

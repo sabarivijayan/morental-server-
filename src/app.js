@@ -7,7 +7,7 @@ import { graphqlUploadExpress } from "graphql-upload"; // Import middleware for 
 import dotenv from "dotenv"; // Import dotenv for environment variable management
 import "./modules/admin/models/relations-model.js"; // Import model relations (if needed)
 import seedAdmin from "./seed.js"; // Import admin seeding script
-import { startCleanupCron } from "./utils/bookingCleanup.js";
+import { startCleanupCron } from "./utils/booking-cleanup.js";
 dotenv.config(); // Load environment variables from .env file
 
 const app = express(); // Create an Express application

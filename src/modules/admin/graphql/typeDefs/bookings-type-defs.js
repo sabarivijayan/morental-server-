@@ -68,12 +68,36 @@ const BookingCarTypeDefs = gql`
     updatedBooking: updateBooking
   }
 
+  type ExcelExportResponse {
+  buffer: String!
+  filename: String!
+}
+
+type ExcelExportResult {
+  status: Boolean!
+  message: String!
+  data: ExcelExportResponse
+}
+
+type PDFExportResponse {
+    buffer: String!
+    filename: String!
+  }
+
+  type PDFExportResult {
+    status: Boolean!
+    message: String!
+    data: PDFExportResponse
+  }
+
   type Query{
     fetchAllBookings: FetchBookingResponse!
   }
 
   type Mutation{
     bookingDelivery(id: String!): BookingResponse!
+    exportBookingsExcel: ExcelExportResult!
+    exportBookingsPDF: PDFExportResult!
   }
 `;
 

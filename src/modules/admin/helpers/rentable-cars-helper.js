@@ -1,6 +1,7 @@
 import RentableRepository from "../repositories/rentable-cars-repositories.js";
 import { deletecarFromTypesense } from "../../../config/typesense.js";
 import CarRepository from "../repositories/car-repositories.js";
+import BookingCar from "../../user/models/booking-cars-model.js";
 class RentableCarsHelper {
   static async getRentableCarById(id) {
     try {
@@ -79,19 +80,29 @@ class RentableCarsHelper {
 
   static async deleteRentableCar(id) {
     try {
-      const deletedCar = await RentableRepository.deleteRentableCarById(id);
-
-      if (!deletedCar) {
-        throw new Error("Vehicle not found");
-      }
-      await deletecarFromTypesense(id);
-
-      return deletedCar.id;
+        // Check for associated bookings before deletion
+        const bookings = await BookingCar.findAll({ where: { carId: id } });
+        if (bookings.length > 0) {
+            throw new Error("Cannot delete rentable car as it has existing bookings");
+        }
+        
+        // Proceed with deletion if no bookings are found
+        const deletedCar = await RentableRepository.deleteRentableCarById(id);
+        
+        if (!deletedCar) {
+            throw new Error("Vehicle not found");
+        }
+        
+        await deletecarFromTypesense(id);
+        
+        return deletedCar.id;
     } catch (error) {
-      console.error("Error in Rentable Car Helper:", error);
-      throw new Error("Error occurred while deleting the car");
+        console.error("Error in Rentable Car Helper:", error);
+        throw new Error("Error occurred while deleting the car");
     }
-  }
+}
+
+  
 }
 
 export default RentableCarsHelper;

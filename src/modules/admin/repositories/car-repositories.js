@@ -1,6 +1,7 @@
 import Car from "../models/car-model.js";
 import { deletecarFromTypesense } from "../../../config/typesense.js";
 import Rentable from "../models/rentable-cars-model.js";
+import BookingCar from "../../user/models/booking-cars-model.js";
 
 class CarRepository {
   
@@ -72,6 +73,20 @@ class CarRepository {
   // Deletes a car by its ID, including related records in Typesense
   static async deleteCarById(id) {
     try {
+      // Check if there are any bookings associated with this car ID
+      const bookings = await BookingCar.findAll({
+        include: {
+            model: Rentable,
+            as: "rentable",
+            where: { carId: id },
+        },
+    });
+
+    // Prevent deletion if bookings are found
+    if (bookings.length > 0) {
+        console.warn(`Cannot delete car with ID: ${id} because active bookings exist`);
+        throw new Error("Cannot delete car as there are active bookings associated with it");
+    }
       // Find all rentables associated with this car ID
       const rentables = await Rentable.findAll({
         where: {

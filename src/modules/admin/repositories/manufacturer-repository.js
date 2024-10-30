@@ -2,6 +2,7 @@ import Manufacturer from "../models/manufacturer-model.js"; // Sequelize model f
 import { deletecarFromTypesense } from "../../../config/typesense.js";
 import Car from "../models/car-model.js";
 import Rentable from "../models/rentable-cars-model.js";
+import BookingCar from "../../user/models/booking-cars-model.js";
 
 class ManufacturerRepository {
   
@@ -69,6 +70,22 @@ class ManufacturerRepository {
   // Deletes a manufacturer by ID, along with associated cars and rentables
   static async deleteManufacturer(id) {
     try {
+      // Check if any bookings exist for cars by this manufacturer
+      const bookings = await BookingCar.findAll({
+        include: {
+            model: Rentable,
+            as: "rentable",
+            include: {
+                model: Car,
+                as: "car",
+                where: { manufacturerId: id },
+            },
+        },
+    });
+
+    if (bookings.length > 0) {
+        throw new Error("Cannot delete manufacturer: bookings exist for associated cars.");
+    }
       // Fetch all cars associated with this manufacturer
       const cars = await Car.findAll({
         where: { manufacturerId: id },

@@ -1,6 +1,6 @@
 import adminHelper from "../../helpers/admin-helper.js";
 import Admin from "../../models/admin-model.js";
-import { validateLogin } from "../../../../utils/JOI/admin-joi.js";
+import { validateLogin } from "../../../../utils/joi/admin-joi.js";
 
 /**
  * Resolver for authentication-related queries and mutations.
@@ -12,7 +12,7 @@ const authResolver = {
   Query: {
     /**
      * Retrieves an admin by ID.
-     * 
+     *
      * @param {Object} _ - Unused parameter.
      * @param {Object} id - ID of the admin to retrieve.
      * @returns {Promise<Admin>} The retrieved admin.
@@ -23,13 +23,13 @@ const authResolver = {
         const admin = await Admin.findByPk(id);
         if (!admin) {
           // If the admin is not found, throw an error.
-          throw new Error('Admin not found');
+          throw new Error("Admin not found");
         }
         // Return the found admin.
         return admin;
       } catch (error) {
         // If an error occurs, throw a new error with a generic message.
-        throw new Error('Admin not found');
+        throw new Error("Admin not found");
       }
     },
   },
@@ -40,7 +40,7 @@ const authResolver = {
   Mutation: {
     /**
      * Handles admin login.
-     * 
+     *
      * @param {Object} _ - Unused parameter.
      * @param {Object} email - Email of the admin to log in.
      * @param {Object} password - Password of the admin to log in.
@@ -55,14 +55,17 @@ const authResolver = {
         const admin = await adminHelper.findAdminByEmail(email);
         if (!admin) {
           // If the admin is not found, throw an error.
-          throw new Error('Invalid credentials');
+          throw new Error("Invalid credentials");
         }
 
         // Validate the password.
-        const isPasswordValid = await adminHelper.validatePassword(password, admin.password);
+        const isPasswordValid = await adminHelper.validatePassword(
+          password,
+          admin.password
+        );
         if (!isPasswordValid) {
           // If the password is invalid, throw an error.
-          throw new Error('Invalid credentials');
+          throw new Error("Invalid credentials");
         }
 
         // Generate a login token for the admin.
@@ -82,8 +85,8 @@ const authResolver = {
         };
       } catch (error) {
         // If an error occurs, log the error and throw a new error with a generic message.
-        console.error('Login error: ', error.message);
-        throw new Error('Login failed: ' + error.message);
+        console.error("Login error: ", error.message);
+        throw new Error("Login failed: " + error.message);
       }
     },
   },

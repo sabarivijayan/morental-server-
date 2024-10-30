@@ -7,11 +7,11 @@ import {
   validateLogin,
   validateProfileUpdate,
   validatePasswordUpdate,
-} from "../../../../utils/JOI/user-joi.js";
+} from "../../../../utils/joi/user-joi.js";
 
 const userAuthResolvers = {
   Upload: GraphQLUpload,
-  
+
   Query: {
     // Resolver to fetch a user by their token
     fetchUser: async (_, __, { token }) => {
@@ -55,7 +55,7 @@ const userAuthResolvers = {
       }
     },
   },
-  
+
   Mutation: {
     // Resolver for user registration
     async registerUser(_, { input }) {
@@ -67,7 +67,7 @@ const userAuthResolvers = {
         throw new Error(error.message);
       }
     },
-    
+
     // Resolver for user login
     async userLogin(_, { email, password }) {
       try {
@@ -78,23 +78,26 @@ const userAuthResolvers = {
         throw new Error(error.message);
       }
     },
-    
+
     // Resolver to send an OTP to the user's phone number
     async sendOTP(_, { phoneNumber }) {
       const response = await authHelpers.sendOTP(phoneNumber);
       return response;
     },
-    
+
     // Resolver to verify the OTP
     async verifyOTP(_, { phoneNumber, otp }) {
       const response = await authHelpers.verifyOTP(phoneNumber, otp);
       return response;
     },
-    
+
     // Resolver to update the user's profile image
     async updateProfileImage(_, { userId, profileImage }) {
       try {
-        const response = await authHelpers.updateProfileImage(userId, profileImage);
+        const response = await authHelpers.updateProfileImage(
+          userId,
+          profileImage
+        );
         return response;
       } catch (error) {
         console.error("Error updating profile picture: ", error.message);
@@ -105,7 +108,7 @@ const userAuthResolvers = {
         };
       }
     },
-    
+
     // Resolver to update user profile information
     async updateUserProfile(_, { userId, input }) {
       try {
@@ -120,7 +123,7 @@ const userAuthResolvers = {
         };
       }
     },
-    
+
     // Resolver to update the user's password
     async updatePassword(_, { userId, input }) {
       try {

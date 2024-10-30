@@ -1,9 +1,9 @@
 import Rentable from "../models/rentable-cars-model.js";
 import Car from "../models/car-model.js";
 import Manufacturer from "../models/manufacturer-model.js";
+import BookingCar from "../../user/models/booking-cars-model.js";
 
 class RentableRepository {
-  
   // Finds a rentable car by carId, if provided
   static async findRentableCarById(carId) {
     try {
@@ -69,9 +69,22 @@ class RentableRepository {
   // Deletes a rentable car by ID, throwing an error if the car is not found
   static async deleteRentableCarById(id) {
     try {
+      const bookings = await BookingCar.findAll({
+        where:{carId:id}
+      });
+
+      console.log("Bookings:",bookings)
+
+      if (bookings.length > 0) {
+        throw new Error(
+          "Cannot delete rentable car as it has existing bookings"
+        );
+      }
+
       const deleteRentable = await Rentable.destroy({
         where: { id },
       });
+
       if (deleteRentable === 0) {
         throw new Error("Rentable car not found");
       }

@@ -211,7 +211,7 @@ const validateInput = (schema, data) => {
       field: detail.path[0],
       message: detail.message
     }));
-    throw new Error(JSON.stringify(errors));
+    throw errors;
   }
   
   return true;

@@ -13,7 +13,7 @@ BookingCar.init({
             model: Rentable,
             key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'RESTRICT',
     },
     userId: {
         type: DataTypes.INTEGER,
