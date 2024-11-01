@@ -1,225 +1,167 @@
 import Joi from 'joi';
 
-// Custom error messages for consistent user feedback
+// Custom messages for common validation errors
 const customMessages = {
-  'string.empty': '{#label} is required',
-  'string.min': '{#label} must be at least {#limit} characters',
-  'string.max': '{#label} must not exceed {#limit} characters',
-  'string.email': 'Please enter a valid email address',
-  'string.pattern.base': '{#label} format is invalid',
-  'any.required': '{#label} is required',
-  'any.only': "Passwords don't match"
+  'string.empty': '{{#label}} cannot be empty',
+  'string.min': '{{#label}} should have at least {{#limit}} characters',
+  'string.max': '{{#label}} should have at most {{#limit}} characters',
+  'string.email': '{{#label}} must be a valid email address',
+  'string.pattern.base': '{{#label}} contains invalid characters',
+  'any.required': '{{#label}} is required',
+  'string.length': '{{#label}} must be {{#limit}} characters long',
 };
 
-// Registration validation schema
-export const registerSchema = Joi.object({
+// Basic user schema for registration
+const userRegistrationSchema = Joi.object({
   firstName: Joi.string()
-    .required()
+    .pattern(/^[A-Za-z]+$/)
     .min(2)
     .max(50)
-    .trim()
-    .messages(customMessages),
+    .required()
+    .messages({
+      'string.pattern.base': 'First name can only contain letters',
+      ...customMessages,
+    }),
 
   lastName: Joi.string()
-    .required()
+    .pattern(/^[A-Za-z]+$/)
     .min(2)
     .max(50)
-    .trim()
-    .messages(customMessages),
+    .required()
+    .messages({
+      'string.pattern.base': 'Last name can only contain letters',
+      ...customMessages,
+    }),
 
   email: Joi.string()
+    .email({ tlds: { allow: false } })
     .required()
-    .email()
-    .trim()
-    .max(255)
     .messages(customMessages),
 
   phoneNumber: Joi.string()
-    .required()
     .pattern(/^[0-9]{10}$/)
+    .required()
     .messages({
+      'string.pattern.base': 'Phone number must be 10 digits',
       ...customMessages,
-      'string.pattern.base': 'Phone number must be 10 digits'
     }),
 
   password: Joi.string()
-    .required()
     .min(8)
-    .max(100)
-    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    .pattern(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/)
+    .required()
     .messages({
+      'string.pattern.base':
+        'Password must contain at least one letter and one number',
       ...customMessages,
-      'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
     }),
 
   confirmPassword: Joi.string()
-    .required()
     .valid(Joi.ref('password'))
+    .required()
     .messages({
+      'any.only': 'Passwords do not match',
       ...customMessages,
-      'any.only': 'Passwords must match'
+    }),
+});
+
+// Address information schema
+const addressSchema = Joi.object({
+  city: Joi.string()
+    .pattern(/^[A-Za-z\s]+$/)
+    .min(2)
+    .max(100)
+    .required()
+    .messages({
+      'string.pattern.base': 'City name can only contain letters and spaces',
+      ...customMessages,
     }),
 
-  city: Joi.string()
-    .required()
-    .min(2)
-    .max(100)
-    .trim()
-    .messages(customMessages),
-
   state: Joi.string()
-    .required()
+    .pattern(/^[A-Za-z\s]+$/)
     .min(2)
     .max(100)
-    .trim()
-    .messages(customMessages),
+    .required()
+    .messages({
+      'string.pattern.base': 'State name can only contain letters and spaces',
+      ...customMessages,
+    }),
 
   country: Joi.string()
-    .required()
+    .pattern(/^[A-Za-z\s]+$/)
     .min(2)
     .max(100)
-    .trim()
-    .messages(customMessages),
+    .required()
+    .messages({
+      'string.pattern.base': 'Country name can only contain letters and spaces',
+      ...customMessages,
+    }),
 
   pincode: Joi.string()
-    .required()
     .pattern(/^[0-9]{6}$/)
+    .required()
     .messages({
+      'string.pattern.base': 'Pincode must be 6 digits',
       ...customMessages,
-      'string.pattern.base': 'Pincode must be 6 digits'
-    })
-}).options({ abortEarly: false });
+    }),
+});
 
-// Login validation schema
-export const loginSchema = Joi.object({
+// Login schema
+const loginSchema = Joi.object({
   email: Joi.string()
+    .email({ tlds: { allow: false } })
     .required()
-    .email()
-    .trim()
-    .max(255)
     .messages(customMessages),
 
-  password: Joi.string()
-    .required()
-    .min(8)
-    .max(100)
-    .messages(customMessages)
-}).options({ abortEarly: false });
+  password: Joi.string().required().messages(customMessages),
+});
 
-// OTP validation schemas
-export const sendOTPSchema = Joi.object({
+// OTP validation schema
+const otpSchema = Joi.object({
   phoneNumber: Joi.string()
-    .required()
     .pattern(/^[0-9]{10}$/)
-    .messages({
-      ...customMessages,
-      'string.pattern.base': 'Phone number must be 10 digits'
-    })
-}).options({ abortEarly: false });
-
-export const verifyOTPSchema = Joi.object({
-  phoneNumber: Joi.string()
     .required()
-    .pattern(/^[0-9]{10}$/)
     .messages({
+      'string.pattern.base': 'Phone number must be 10 digits',
       ...customMessages,
-      'string.pattern.base': 'Phone number must be 10 digits'
     }),
-  
+
   otp: Joi.string()
+    .length(6)
+    .pattern(/^[0-9]+$/)
     .required()
-    .pattern(/^[0-9]{6}$/)
     .messages({
+      'string.pattern.base': 'OTP must contain only numbers',
       ...customMessages,
-      'string.pattern.base': 'OTP must be 6 digits'
-    })
-}).options({ abortEarly: false });
-
-// Profile update validation schema
-export const updateProfileSchema = Joi.object({
-  firstName: Joi.string()
-    .min(2)
-    .max(50)
-    .trim()
-    .messages(customMessages),
-
-  lastName: Joi.string()
-    .min(2)
-    .max(50)
-    .trim()
-    .messages(customMessages),
-
-  city: Joi.string()
-    .min(2)
-    .max(100)
-    .trim()
-    .messages(customMessages),
-
-  state: Joi.string()
-    .min(2)
-    .max(100)
-    .trim()
-    .messages(customMessages),
-
-  country: Joi.string()
-    .min(2)
-    .max(100)
-    .trim()
-    .messages(customMessages),
-
-  pincode: Joi.string()
-    .pattern(/^[0-9]{6}$/)
-    .messages({
-      ...customMessages,
-      'string.pattern.base': 'Pincode must be 6 digits'
-    })
-}).options({ abortEarly: false });
-
-// Password update validation schema
-export const updatePasswordSchema = Joi.object({
-  currentPassword: Joi.string()
-    .required()
-    .min(8)
-    .max(100)
-    .messages(customMessages),
-
-  newPassword: Joi.string()
-    .required()
-    .min(8)
-    .max(100)
-    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
-    .messages({
-      ...customMessages,
-      'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
     }),
+});
 
-  confirmNewPassword: Joi.string()
-    .required()
-    .valid(Joi.ref('newPassword'))
-    .messages({
-      ...customMessages,
-      'any.only': 'Passwords must match'
-    })
-}).options({ abortEarly: false });
-
-// Validation helper functions
-const validateInput = (schema, data) => {
-  const { error } = schema.validate(data);
-  
-  if (error) {
-    const errors = error.details.map(detail => ({
-      field: detail.path[0],
-      message: detail.message
-    }));
-    throw errors;
-  }
-  
-  return true;
+// Validation middleware
+const validateRequest = (schema) => {
+  return (req, res, next) => {
+    const { error } = schema.validate(req.body, { abortEarly: false });
+    
+    if (error) {
+      const errors = error.details.map((detail) => ({
+        field: detail.path[0],
+        message: detail.message,
+      }));
+      
+      return res.status(400).json({
+        status: 'error',
+        message: 'Validation failed',
+        errors,
+      });
+    }
+    
+    next();
+  };
 };
 
-export const validateRegistration = (data) => validateInput(registerSchema, data);
-export const validateLogin = (data) => validateInput(loginSchema, data);
-export const validateSendOTP = (data) => validateInput(sendOTPSchema, data);
-export const validateVerifyOTP = (data) => validateInput(verifyOTPSchema, data);
-export const validateProfileUpdate = (data) => validateInput(updateProfileSchema, data);
-export const validatePasswordUpdate = (data) => validateInput(updatePasswordSchema, data);
+export {
+  validateRequest,
+  userRegistrationSchema,
+  addressSchema,
+  loginSchema,
+  otpSchema,
+};

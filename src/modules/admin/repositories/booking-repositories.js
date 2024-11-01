@@ -5,9 +5,12 @@ import Car from "../models/car-model.js";
 
 class BookingAdminRepository {
   // Fetches all bookings, including related rentable car, car, and manufacturer details
-  static async fetchAllBookings() {
+  static async fetchAllBookings(page = 1, limit = 10) {
     try {
-      return await BookingCar.findAll({
+      const offset = (page - 1) * limit;
+      
+      // Get total count first
+      const totalCount = await BookingCar.count({
         include: [
           {
             model: Rentable,
@@ -27,9 +30,37 @@ class BookingAdminRepository {
           },
         ],
       });
+
+      // Get paginated results
+      const bookings = await BookingCar.findAll({
+        include: [
+          {
+            model: Rentable,
+            as: "rentable",
+            include: [
+              {
+                model: Car,
+                as: "car",
+                include: [
+                  {
+                    model: Manufacturer,
+                    as: "manufacturer",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        limit: limit,
+        offset: offset,
+      });
+
+      return {
+        bookings,
+        totalCount,
+      };
     } catch (error) {
       console.error("Error in BookingAdminRepository.fetchAllBookings:", error);
-      // Throw an error if fetching bookings fails
       throw new Error(`Database query failed: ${error.message}`);
     }
   }

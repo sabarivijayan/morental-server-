@@ -18,9 +18,18 @@ class ManufacturerRepository {
   }
 
   // Retrieves all manufacturers from the database
-  static async findAll() {
+  static async findAll(offset = 0, limit = 10) {
     try {
-      return await Manufacturer.findAll();
+      const { count, rows } = await Manufacturer.findAndCountAll({
+        offset,
+        limit,
+        order: [['name', 'ASC']], // Optional: Add ordering
+      });
+      
+      return {
+        manufacturers: rows,
+        totalCount: count
+      };
     } catch (error) {
       console.error("Error fetching manufacturers:", error);
       throw new Error("Failed to fetch manufacturers");

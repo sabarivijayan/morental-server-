@@ -26,12 +26,10 @@ const carResolvers = {
     },
 
     // Resolver to fetch all cars
-    getCars: async () => {
+    getCars: async (_, { pagination }) => {
       try {
-        // Call the getCars function from CarHelper
-        return await CarHelper.getCars();
+        return await CarHelper.getCars(pagination);
       } catch (error) {
-        // Log the error and throw a new error
         console.error("Error fetching cars", error);
         throw new Error("Failed to fetch cars");
       }

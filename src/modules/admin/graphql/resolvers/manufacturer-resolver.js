@@ -5,12 +5,10 @@ const manufacturerResolver = {
   // Define the queries for retrieving manufacturer data
   Query: {
     // Retrieve a list of all manufacturers
-    getManufacturers: async () => {
+    getManufacturers: async (_, { offset, limit }) => {
       try {
-        // Call the helper function to fetch manufacturers
-        return await ManufacturerHelper.getManufacturers();
+        return await ManufacturerHelper.getManufacturers(offset, limit);
       } catch (error) {
-        // Throw an error if the fetch operation fails
         throw new Error(error.message || 'Failed to fetch manufacturers');
       }
     },

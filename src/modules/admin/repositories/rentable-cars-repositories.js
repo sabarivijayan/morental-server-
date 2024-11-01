@@ -18,27 +18,37 @@ class RentableRepository {
   }
 
   // Retrieves all rentable cars along with their associated car and manufacturer details
-  static async findAllRentable() {
+  static async findAllRentable(offset = 0, limit = 10) {
     try {
-      return await Rentable.findAll({
-        include: [
-          {
-            model: Car,
-            as: "car",
-            include: {
-              model: Manufacturer,
-              as: "manufacturer",
-            },
-          },
-        ],
-      });
+        const [rentableCars, totalCount] = await Promise.all([
+            Rentable.findAll({
+                include: [
+                    {
+                        model: Car,
+                        as: "car",
+                        include: {
+                            model: Manufacturer,
+                            as: "manufacturer",
+                        },
+                    },
+                ],
+                offset,
+                limit,
+            }),
+            Rentable.count()
+        ]);
+
+        return {
+            rentableCars,
+            totalCount
+        };
     } catch (error) {
-      throw new Error(
-        "Database error occurred while fetching rentable vehicles: " +
-          error.message
-      );
+        throw new Error(
+            "Database error occurred while fetching rentable vehicles: " +
+            error.message
+        );
     }
-  }
+}
 
   // Creates a new rentable car entry in the database
   static async createRentableCars(data) {

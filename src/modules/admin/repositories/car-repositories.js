@@ -60,10 +60,19 @@ class CarRepository {
   }
 
   // Retrieves all car records from the database
-  static async getAllCars() {
+  static async getAllCars(offset = 0, limit = 10) {
     try {
-      const cars = await Car.findAll();
-      return cars;
+      const { count, rows } = await Car.findAndCountAll({
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']]
+      });
+
+      return {
+        cars: rows,
+        total: count,
+        hasMore: offset + limit < count
+      };
     } catch (error) {
       console.error("Error fetching cars: ", error);
       throw new Error("Failed to fetch cars");

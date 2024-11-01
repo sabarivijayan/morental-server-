@@ -9,27 +9,16 @@ const BookingAdminResolver = {
    * Query resolvers for booking administration.
    */
   Query: {
-    /**
-     * fetchAllBookings is a query resolver that retrieves all bookings.
-     * 
-     * @param {object} _ - The GraphQL context object.
-     * @param {object} __ - The GraphQL info object.
-     * @param {object} { token } - The GraphQL context object containing the token.
-     * 
-     * @returns {Promise<object>} A promise that resolves to an object containing the booking data.
-     */
-    fetchAllBookings: async (_, __, { token }) => {
+    fetchAllBookings: async (_, { page = 1, limit = 10 }, { token }) => {
       try {
-        // Call the BookingAdminHelper to retrieve all bookings.
-        return await BookingAdminHelper.getAllBookings();
+        return await BookingAdminHelper.getAllBookings(page, limit);
       } catch (error) {
-        // Log any errors that occur during the execution of the resolver.
         console.error("Error in fetchAllBookings resolver:", error);
-        // Return an error response with a status of false and a message.
         return {
           status: false,
           message: `An error occurred while fetching bookings: ${error.message}`,
           data: [],
+          pagination: null,
         };
       }
     },

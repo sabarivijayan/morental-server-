@@ -97,9 +97,9 @@ class CarHelper {
   }
 
   // Retrieves all cars from the database
-  static async getCars() {
+  static async getCars(pagination = { offset: 0, limit: 10 }) {
     try {
-      return await CarRepository.getAllCars();
+      return await CarRepository.getAllCars(pagination.offset, pagination.limit);
     } catch (error) {
       console.error("Error fetching all cars: ", error.message);
       throw new Error("Failed to fetch all cars");

@@ -51,10 +51,19 @@ const BookingCarTypeDefs = gql`
     rentable: Rentable
   }
 
-  type FetchBookingResponse{
+  type PaginationInfo {
+    total: Int
+    currentPage: Int
+    totalPages: Int
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+  }
+
+  type FetchBookingResponse {
     status: Boolean!
     message: String!
     data: [FetchBooking]
+    pagination: PaginationInfo
   }
 
   type updateBooking {
@@ -90,8 +99,8 @@ type PDFExportResponse {
     data: PDFExportResponse
   }
 
-  type Query{
-    fetchAllBookings: FetchBookingResponse!
+  type Query {
+    fetchAllBookings(page: Int, limit: Int): FetchBookingResponse!
   }
 
   type Mutation{

@@ -2,12 +2,7 @@ import { GraphQLUpload } from "graphql-upload";
 import authHelpers from "../../helpers/auth-helpers.js";
 import User from "../../models/auth-model.js";
 import { verifyToken } from "../../../../utils/jwt.js";
-import {
-  validateRegistration,
-  validateLogin,
-  validateProfileUpdate,
-  validatePasswordUpdate,
-} from "../../../../utils/joi/user-joi.js";
+
 
 const userAuthResolvers = {
   Upload: GraphQLUpload,
@@ -60,7 +55,7 @@ const userAuthResolvers = {
     // Resolver for user registration
     async registerUser(_, { input }) {
       try {
-        validateRegistration(input); // Validate input data
+
         const response = await authHelpers.registerUser(input);
         return response;
       } catch (error) {
@@ -71,7 +66,7 @@ const userAuthResolvers = {
     // Resolver for user login
     async userLogin(_, { email, password }) {
       try {
-        validateLogin({ email, password }); // Validate credentials
+
         const response = await authHelpers.loginUser(email, password);
         return response;
       } catch (error) {

@@ -1,7 +1,6 @@
 import { gql } from 'apollo-server-express';
 
 const CarTypeDefs = gql`
-
   scalar Upload
 
   type Car {
@@ -19,7 +18,13 @@ const CarTypeDefs = gql`
     year: String!
   }
 
-  input AdminCarInput{
+  type PaginatedCarsResponse {
+    cars: [Car]!
+    total: Int
+    hasMore: Boolean!
+  }
+
+  input AdminCarInput {
     name: String!
     type: String!
     numberOfSeats: String!
@@ -44,14 +49,19 @@ const CarTypeDefs = gql`
     year: String!
   }
 
-  type AddCarByExcelResponse{
+  input PaginationInput {
+    offset: Int
+    limit: Int
+  }
+
+  type AddCarByExcelResponse {
     success: Boolean!
     message: String
     addedCarsCount: Int!
   }
 
   type Query {
-    getCars: [Car!]!
+    getCars(pagination: PaginationInput): PaginatedCarsResponse!
     getCarById(id: String!): Car
   }
 
@@ -61,13 +71,14 @@ const CarTypeDefs = gql`
       primaryImage: Upload!,
       secondaryImages: [Upload!]!
     ): Car!
-
-    updateCar( id: String!, input: EditCarInput!): Car!
-
+    
+    updateCar(id: String!, input: EditCarInput!): Car!
+    
     deleteCar(id: String!): Car
-
+    
     addCarByExcel(excelFile: Upload!): AddCarByExcelResponse!
   }
 `;
+
 
 export default CarTypeDefs;

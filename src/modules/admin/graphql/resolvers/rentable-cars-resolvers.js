@@ -15,16 +15,14 @@ const RentableCarResolvers = {
      * 
      * @returns {Promise<Array>} An array of rentable cars.
      */
-    getRentableCars: async () => {
+    getRentableCars: async (_, { offset, limit }) => {
       try {
-        // Call the helper function to retrieve all rentable cars.
-        return await RentableCarsHelper.getAllRentableCars();
+          return await RentableCarsHelper.getAllRentableCars(offset, limit);
       } catch (error) {
-        // Throw an error if there's an issue fetching rentable cars.
-        throw new Error("Error fetching rentable cars: " + error.message);
+          throw new Error("Error fetching rentable cars: " + error.message);
       }
-    },
   },
+},
   /**
    * Mutation resolvers.
    */

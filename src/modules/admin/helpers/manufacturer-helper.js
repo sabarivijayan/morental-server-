@@ -24,12 +24,12 @@ class ManufacturerHelper {
   }
 
   // Retrieves a list of all manufacturers
-  static async getManufacturers() {
+  static async getManufacturers(offset, limit) {
     try {
-      return await ManufacturerRepository.findAll(); // Fetch and return all manufacturers
+      return await ManufacturerRepository.findAll(offset, limit);
     } catch (error) {
-      console.error('Error fetching manufacturers:', error); // Log the error
-      throw new Error('Failed to fetch manufacturers'); // Rethrow error with a message
+      console.error('Error fetching manufacturers:', error);
+      throw new Error('Failed to fetch manufacturers');
     }
   }
 

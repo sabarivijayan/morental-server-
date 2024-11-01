@@ -7,8 +7,13 @@ const manufactureTypeDefs = gql`
     country: String!
   }
 
+  type ManufacturerConnection {
+    manufacturers: [Manufacturer]!
+    totalCount: Int
+  }
+
   type Query {
-    getManufacturers: [Manufacturer]
+    getManufacturers(offset: Int, limit: Int): ManufacturerConnection!
     getManufacturer(id: ID!): Manufacturer
   }
 

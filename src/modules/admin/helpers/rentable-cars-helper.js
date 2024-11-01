@@ -12,14 +12,14 @@ class RentableCarsHelper {
       throw new Error(error.message || "Failed to fetch Car");
     }
   }
-  static async getAllRentableCars() {
+  static async getAllRentableCars(offset, limit) {
     try {
-      const rentableCar = await RentableRepository.findAllRentable();
-      return rentableCar;
+        const result = await RentableRepository.findAllRentable(offset, limit);
+        return result;
     } catch (error) {
-      throw new Error("Error in the helper cannot fetch cars:" + error.message);
+        throw new Error("Error in the helper cannot fetch cars:" + error.message);
     }
-  }
+}
 
   static async addRentableCar(data) {
     try {

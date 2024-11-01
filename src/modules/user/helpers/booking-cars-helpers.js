@@ -191,7 +191,7 @@ class BookingCarHelper {
         // Step 4: Check availability for each rentable vehicle
         for (const rentable of rentableCars) {
           const isAvailable = await BookingCarRepository.checkCarAvailability(
-            rentable.carId,
+            rentable.id,
             pickUpDate,
             dropOffDate
           );
@@ -219,7 +219,7 @@ class BookingCarHelper {
         // Check availability for each rentable vehicle
         for (const rentable of rentableCars) {
           const isAvailable = await BookingCarRepository.checkCarAvailability(
-            rentable.carId,
+            rentable.id,
             pickUpDate,
             dropOffDate
           );

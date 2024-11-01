@@ -3,32 +3,44 @@ import BookingAdminRepository from "../repositories/booking-repositories.js";
 // BookingAdminHelper class provides helper methods for booking administration
 class BookingAdminHelper {
     // Retrieves all bookings from the repository
-    static async getAllBookings() {
+    static async getAllBookings(page, limit) {
         try {
-            // Fetch all bookings from the repository
-            const bookings = await BookingAdminRepository.fetchAllBookings();
-            
-            // Check if bookings are found
-            if (!bookings || bookings.length === 0) {
-                // Return a response indicating no bookings found
-                return {
-                    status: true,
-                    message: "No bookings found",
-                    data: [],
-                }
-            }
-            // Return a response with the found bookings
+          const { bookings, totalCount } = await BookingAdminRepository.fetchAllBookings(page, limit);
+          
+          if (!bookings || bookings.length === 0) {
             return {
-                status: true,
-                message: "Bookings found",
-                data: bookings,
+              status: true,
+              message: "No bookings found",
+              data: [],
+              pagination: {
+                total: 0,
+                currentPage: page,
+                totalPages: 0,
+                hasNextPage: false,
+                hasPreviousPage: false,
+              }
             };
+          }
+    
+          const totalPages = Math.ceil(totalCount / limit);
+          
+          return {
+            status: true,
+            message: "Bookings found",
+            data: bookings,
+            pagination: {
+              total: totalCount,
+              currentPage: page,
+              totalPages: totalPages,
+              hasNextPage: page < totalPages,
+              hasPreviousPage: page > 1,
+            }
+          };
         } catch (error) {
-            // Log the error and throw a new error with a user-friendly message
-            console.error("Error in BookingAdminHelper.getAllBookings:", error);
-            throw new Error(`Error fetching bookings: ${error.message}`);
+          console.error("Error in BookingAdminHelper.getAllBookings:", error);
+          throw new Error(`Error fetching bookings: ${error.message}`);
         }
-    }
+      }
 
     // Updates a booking's status to 'delivered' and sets the delivery date
     static async bookingDelivery(bookingId) {

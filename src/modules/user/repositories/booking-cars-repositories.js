@@ -77,7 +77,6 @@ class BookingCarRepository {
   // Check if a car is available for the specified rental period
   static async checkCarAvailability(id, pickUpDate, dropOffDate) {
     const transaction = await Rentable.sequelize.transaction();
-
     try {
       // Lock the car record for the specified car ID
       const rentableCar = await Rentable.findByPk(id, {
